@@ -1,12 +1,10 @@
 # crypto-trading-bots-binance
 
-# Documentación de Funciones y Métodos de `binance-api-node`
+## Documentación de Funciones y Métodos de `binance-api-node`
 
 Este archivo contiene una lista detallada de las funciones y métodos disponibles en el paquete `binance-api-node`. Cada sección incluye una explicación del propósito de la función, esta es la ruta notas-&-errores/preguntas/binance-funciones-metodos.js .
 
 ---
-
-## Índice de Funciones
 
 - **Funciones Básicas**
 
@@ -14,7 +12,8 @@ Este archivo contiene una lista detallada de las funciones y métodos disponible
   2. Información de la Cuenta
   3. Precios Actuales
 
-- **Gestión de Órdenes** 4. Libro de Órdenes 5. Historial de Trades 6. Creación de Órdenes 7. Cancelación de Órdenes 8. Órdenes Abiertas 9. Historial de Órdenes
+- **Gestión de Órdenes**
+- **#4 Libro de Órdenes** 5. Historial de Trades 6. Creación de Órdenes 7. Cancelación de Órdenes 8. Órdenes Abiertas 9. Historial de Órdenes
 
 - **Análisis de Mercado** 10. Profundidad del Mercado 11. Información del Intercambio 12. WebSockets para Actualizaciones en Tiempo Real 13. Precio Promedio Ponderado 14. Estadísticas Diarias 15. Velas Históricas
 
