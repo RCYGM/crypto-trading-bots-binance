@@ -173,6 +173,9 @@ client.dailyStats({ symbol: "BTCUSDT" }).then((stats) => {
  * Devuelve información como apertura, cierre, alto, bajo y volumen para cada intervalo.
  * @param {string} symbol - El par de trading (por ejemplo, BTCUSDT).
  * @param {string} interval - El intervalo de las velas (por ejemplo, "1m", "5m", "1h", "1d").
+ * @param {number} limit - Número máximo de velas a devolver (máximo: 1000).
+ * @param {number} startTime - Tiempos específicos para definir un rango (opcional).
+ * @param {number} endTime - Tiempos específicos para definir un rango (opcional).
  */
 client.candles({ symbol: "BTCUSDT", interval: "1h" }).then((candles) => {
   console.log("Velas de BTCUSDT (1h):", candles);
