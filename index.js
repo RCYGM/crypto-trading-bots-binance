@@ -1,4 +1,6 @@
 const Binance = require("binance-api-node").default;
+const Indicadores = require("./indicadores");
+const indicadores = new Indicadores();
 
 // Cargar credenciales desde el archivo .env
 require("dotenv").config();
@@ -41,14 +43,38 @@ const intervalArr = [
 const limitArr = [1000, 5];
 const startTimeArr = [];
 const endTineArr = [];
-let candlesticksArr_BTCUSDT = [];
+
+const candlesticksArr = [
+  {
+    symbolName: "BTCUSDT",
+    candLesticks: [],
+    closeCandLesticks: [],
+    indicadores: [
+      {
+        nombre: "EMA",
+      },
+      {
+        nombre: "RSI",
+      },
+    ],
+    estrategias: [
+      {
+        nombre: "EMA-RSI",
+      },
+    ],
+  },
+];
+
+const estrategia_EMARSI = (ema10, ema50, rsi, soporteResistencia) => {
+  console.log(ema10, ema50, rsi, soporteResistencia);
+};
 
 const fetchHistoricalData = async () => {
   try {
     // Parámetros para la solicitud
     const symbol = symbolArr[0];
     const interval = intervalArr[1];
-    const limit = limitArr[0];
+    const limit = 100; //limitArr[1];
     const startTime = startTimeArr[0];
     const endTine = endTineArr[0];
 
@@ -58,9 +84,35 @@ const fetchHistoricalData = async () => {
       interval: interval,
       limit: limit,
     });
-    candlesticksArr_BTCUSDT = candLesticks;
+    const preciosCierreArr = (candlesticksArr[0].closeCandLesticks =
+      candLesticks.map((item) => parseFloat(item.close)));
+    console.log(
+      "Arreglo de precio de cierre variable actualizada",
+      preciosCierreArr
+    );
+
+    const ema10 = indicadores.calculateEMA(preciosCierreArr, 10);
+    const ema50 = indicadores.calculateEMA(preciosCierreArr, 50);
+    const rsi14 = indicadores.calculateRSI(preciosCierreArr, 14);
+
+    console.log("EMA 10", ema10);
+    console.log("EMA 50", ema50);
+    console.log("RSI 14", rsi14);
+
+    estrategia_EMARSI(ema10, ema50, rsi14);
+    candlesticksArr[0].candLesticks = candLesticks;
+    /*
+    console.log(
+      "Arreglo de precio de cierre key actualizado",
+      candlesticksArr[0].closeCandLesticks
+    );
+    console.log(
+      "Arreglo de precio de cierre variable actualizada",
+      preciosCierreArr
+    );
+    console.log("Estoy en el arreglo", candlesticksArr[0].candLesticks); */
   } catch (error) {
     console.log("Error al obtener datos históricos:", error.message);
   }
 };
-// fetchHistoricalData();
+fetchHistoricalData();
