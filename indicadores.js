@@ -113,7 +113,7 @@ class Indicadores {
     return rsi[rsi.length - 1];
   }
 
-  calculateResistencias(maximo, minimo, cierre) {
+  calculateSopRes(maximo, minimo, cierre) {
     if (maximo.length !== minimo.length || maximo.length !== cierre.length) {
       throw new Error(
         "Los arrays maximo, minimo y cierre deben tener la misma longitud."

@@ -9,6 +9,26 @@ const client = Binance({
   apiSecret: process.env.BINANCE_API_SECRET,
 });
 
+const estrategia_EMARSI = (data5m, data15m, data4h, price) => {
+  const { ema10_5m, ema50_5m, rsi14_5m, sopResObj_5m } = data5m;
+  const { ema10_15m, ema50_15m, rsi14_15m, sopResObj_15m } = data15m;
+  const { ema10_4h, ema50_4h, rsi14_4h, sopResObj_4h } = data4h;
+
+  const is4hAlcista = (getis4hAlcista = () => {
+    if (ema10_4h > ema50_4h && rsi14_4h > 50 && sopResObj_4h.pp / 4) {
+      return true;
+    } else {
+      return false;
+    }
+  });
+
+  if (is4hAlcista) {
+    console.log("Estoy Dentro");
+  }
+
+  console.log(data5m, data15m, data4h);
+};
+
 // Probar conexión a Binance
 
 client
@@ -24,93 +44,166 @@ client
   });
 
 // Obtener datos históricos
-const symbolArr = ["BTCUSDT"];
-const intervalArr = [
-  "5m",
-  "15m",
-  "30m",
-  "1h",
-  "2h",
-  "4h",
-  "6h",
-  "8h",
-  "12h",
-  "1d",
-  "3d",
-  "1w",
-  "1m",
-];
-const limitArr = [1000, 5];
-const startTimeArr = [];
-const endTineArr = [];
 
-const candlesticksArr = [
+const candlesticksData = [
   {
-    symbolName: "BTCUSDT",
-    candLesticks: [],
-    closeCandLesticks: [],
-    indicadores: [
+    symbol: "BTCUSD",
+    getCandlesticksData: [
       {
-        nombre: "EMA",
+        symbol: "BTCUSDT",
+        interval: "5m",
+        limit: 60,
+        //startTime: undefined,
+        //endTine: undefined,
       },
       {
-        nombre: "RSI",
+        symbol: "BTCUSDT",
+        interval: "15m",
+        limit: 60,
+        //startTime: undefined,
+        // endTine: undefined,
+      },
+      {
+        symbol: "BTCUSDT",
+        interval: "4h",
+        limit: 60,
+        //startTime: undefined,
+        //endTine: undefined,
       },
     ],
-    estrategias: [
+    getEstrategias: [estrategia_EMARSI],
+    candLesticks: [
       {
-        nombre: "EMA-RSI",
+        symbolName: "BTCUSDT-5M",
+        highArr: [],
+        lowArr: [],
+        closeArr: [],
+        volumeArr: [],
+        quoteVolumeArr: [],
+        tradesArr: [],
+        baseAssetVolumeArr: [],
+        quoteAssetVolumeArr: [],
+        candLesticks: [],
+      },
+      {
+        symbolName: "BTCUSDT-15M",
+        highArr: [],
+        lowArr: [],
+        closeArr: [],
+        volumeArr: [],
+        quoteVolumeArr: [],
+        tradesArr: [],
+        baseAssetVolumeArr: [],
+        quoteAssetVolumeArr: [],
+        candLesticks: [],
+      },
+      {
+        symbolName: "BTCUSDT-4H",
+        highArr: [],
+        lowArr: [],
+        closeArr: [],
+        volumeArr: [],
+        quoteVolumeArr: [],
+        tradesArr: [],
+        baseAssetVolumeArr: [],
+        quoteAssetVolumeArr: [],
+        candLesticks: [],
       },
     ],
   },
 ];
 
-const estrategia_EMARSI = (ema10, ema50, rsi, soporteResistencia) => {
-  console.log(ema10, ema50, rsi, soporteResistencia);
-};
-
 const fetchHistoricalData = async () => {
+  const getCandlesticks_5m = candlesticksData[0].getCandlesticksData[0];
+  const getCandlesticks_15m = candlesticksData[0].getCandlesticksData[0];
+  const getCandlesticks_4h = candlesticksData[0].getCandlesticksData[0];
+
   try {
-    // Parámetros para la solicitud
-    const symbol = symbolArr[0];
-    const interval = intervalArr[1];
-    const limit = 100; //limitArr[1];
-    const startTime = startTimeArr[0];
-    const endTine = endTineArr[0];
-
     // Solicitar datos de velas (klines)
-    const candLesticks = await client.candles({
-      symbol: symbol,
-      interval: interval,
-      limit: limit,
-    });
-    const preciosCierreArr = (candlesticksArr[0].closeCandLesticks =
-      candLesticks.map((item) => parseFloat(item.close)));
-    console.log(
-      "Arreglo de precio de cierre variable actualizada",
-      preciosCierreArr
-    );
+    const candLesticks_5m = await client.candles(getCandlesticks_5m);
+    const candLesticks_15m = await client.candles(getCandlesticks_15m);
+    const candLesticks_4h = await client.candles(getCandlesticks_4h);
 
-    const ema10 = indicadores.calculateEMA(preciosCierreArr, 10);
-    const ema50 = indicadores.calculateEMA(preciosCierreArr, 50);
-    const rsi14 = indicadores.calculateRSI(preciosCierreArr, 14);
+    let data5m = {};
+    let data15m = {};
+    let data4h = {};
 
-    console.log("EMA 10", ema10);
-    console.log("EMA 50", ema50);
-    console.log("RSI 14", rsi14);
+    if (candLesticks_5m) {
+      const priceHighArr_5m = (candlesticksData[0].candLesticks[0].highArr =
+        candLesticks_5m.map((item) => parseFloat(item.high)));
+      const priceLowArr_5m = (candlesticksData[0].candLesticks[0].lowArr =
+        candLesticks_5m.map((item) => parseFloat(item.low)));
+      const priceCloseArr_5m = (candlesticksData[0].candLesticks[0].closeArr =
+        candLesticks_5m.map((item) => parseFloat(item.close)));
 
-    estrategia_EMARSI(ema10, ema50, rsi14);
-    candlesticksArr[0].candLesticks = candLesticks;
-    /*
-    console.log(
-      "Arreglo de precio de cierre key actualizado",
-      candlesticksArr[0].closeCandLesticks
-    );
-    console.log(
-      "Arreglo de precio de cierre variable actualizada",
-      preciosCierreArr
-    );
-    console.log("Estoy en el arreglo", candlesticksArr[0].candLesticks); */
+      const ema10_5m = indicadores.calculateEMA(priceCloseArr_5m, 10);
+      const ema50_5m = indicadores.calculateEMA(priceCloseArr_5m, 50);
+      const rsi14_5m = indicadores.calculateRSI(priceCloseArr_5m, 14);
+      const sopResObj = indicadores.calculateSopRes(
+        priceHighArr_5m,
+        priceLowArr_5m,
+        priceCloseArr_5m
+      );
+
+      data5m = { candLesticks: "5m", ema10_5m, ema50_5m, rsi14_5m, sopResObj };
+    }
+    if (candLesticks_15m) {
+      const priceHighArr_15m = (candlesticksData[0].candLesticks[1].highArr =
+        candLesticks_15m.map((item) => parseFloat(item.high)));
+      const priceLowArr_15m = (candlesticksData[0].candLesticks[1].lowArr =
+        candLesticks_15m.map((item) => parseFloat(item.low)));
+      const priceCloseArr_15m = (candlesticksData[0].candLesticks[1].closeArr =
+        candLesticks_15m.map((item) => parseFloat(item.close)));
+
+      const ema10_15m = indicadores.calculateEMA(priceCloseArr_15m, 10);
+      const ema50_15m = indicadores.calculateEMA(priceCloseArr_15m, 50);
+      const rsi14_15 = indicadores.calculateRSI(priceCloseArr_15m, 14);
+      const sopResObj_15m = indicadores.calculateSopRes(
+        priceHighArr_15m,
+        priceLowArr_15m,
+        priceCloseArr_15m
+      );
+
+      data15m = {
+        candLesticks: "15m",
+        ema10_15m,
+        ema50_15m,
+        rsi14_15,
+        sopResObj_15m,
+      };
+    }
+    if (candLesticks_4h) {
+      const priceHighArr_4h = (candlesticksData[0].candLesticks[2].highArr =
+        candLesticks_4h.map((item) => parseFloat(item.high)));
+      const priceLowArr_4h = (candlesticksData[0].candLesticks[2].lowArr =
+        candLesticks_4h.map((item) => parseFloat(item.low)));
+      const priceCloseArr_4h = (candlesticksData[0].candLesticks[2].closeArr =
+        candLesticks_4h.map((item) => parseFloat(item.close)));
+
+      const ema10_4h = indicadores.calculateEMA(priceCloseArr_4h, 10);
+      const ema50_4h = indicadores.calculateEMA(priceCloseArr_4h, 50);
+      const rsi14_4h = indicadores.calculateRSI(priceCloseArr_4h, 14);
+      const sopResObj_4h = indicadores.calculateSopRes(
+        priceHighArr_4h,
+        priceLowArr_4h,
+        priceCloseArr_4h
+      );
+
+      data4h = {
+        candLesticks: "4h",
+        ema10_4h,
+        ema50_4h,
+        rsi14_4h,
+        sopResObj_4h,
+      };
+    }
+    const priceBTCUSDT = await client.prices().then((prices) => prices.BTCUSDT);
+
+    estrategia_EMARSI(data5m, data15m, data4h, priceBTCUSDT);
+
+    candlesticksData[0].candLesticks[0].candLesticks = candLesticks_5m;
+    candlesticksData[0].candLesticks[1].candLesticks = candLesticks_15m;
+    candlesticksData[0].candLesticks[2].candLesticks = candLesticks_4h;
   } catch (error) {
     console.log("Error al obtener datos históricos:", error.message);
   }
