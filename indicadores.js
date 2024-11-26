@@ -56,7 +56,7 @@ class Indicadores {
     }
 
     // Devolver el último valor o el array completo
-    return ema[ema.length - 1];
+    return ema;
   }
 
   // Método para calcular el RSI
@@ -110,7 +110,7 @@ class Indicadores {
     }
 
     // Devolver el último RSI calculado
-    return rsi[rsi.length - 1];
+    return rsi;
   }
 
   calculateSopRes(maximo, minimo, cierre) {
