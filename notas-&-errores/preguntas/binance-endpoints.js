@@ -5,6 +5,8 @@
  */
 
 // Importar el paquete binance-api-node y cargar las claves desde variables de entorno
+
+/*
 const Binance = require("binance-api-node").default;
 require("dotenv").config();
 
@@ -13,7 +15,7 @@ const client = Binance({
   apiKey: process.env.BINANCE_API_KEY,
   apiSecret: process.env.BINANCE_API_SECRET,
 });
-
+ */
 /**
  * 1. client.time()
  * Método para obtener la hora del servidor de Binance.
