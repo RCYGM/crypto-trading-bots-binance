@@ -91,28 +91,7 @@ client
  * @param {string} symbol - El par de trading.
  * @param {number} orderId - ID de la orden a cancelar.
  * 
- * devuelve un arreglo como este:
- * [
-  {
-    "symbol": "ETHUSDT",            // El par de trading
-    "orderId": 12345678,            // ID único de la orden
-    "orderListId": -1,              // ID de lista (usualmente -1 para órdenes individuales)
-    "clientOrderId": "custom-id",   // ID de cliente para identificar la orden
-    "price": "2000.00",             // Precio de la orden
-    "origQty": "0.5",               // Cantidad original de la orden
-    "executedQty": "0.2",           // Cantidad ya ejecutada
-    "cummulativeQuoteQty": "400.00",// Cantidad acumulativa en la moneda cotizada
-    "status": "NEW",                // Estado de la orden (ej. NEW, PARTIALLY_FILLED)
-    "timeInForce": "GTC",           // Tipo de validez (ej. GTC, IOC, FOK)
-    "type": "LIMIT",                // Tipo de orden (ej. LIMIT, MARKET)
-    "side": "BUY",                  // Dirección (ej. BUY, SELL)
-    "stopPrice": "0.0",             // Precio de stop (para órdenes stop-limit)
-    "icebergQty": "0.0",            // Cantidad iceberg
-    "time": 1641000000000,          // Marca de tiempo en milisegundos
-    "updateTime": 1641000000000,    // Última actualización
-    "isWorking": true,              // Indica si la orden sigue activa
-    "origQuoteOrderQty": "0.0"      // Cantidad original en la moneda cotizada (para órdenes de mercado)
-  }
+ *
 ]
  */
 client

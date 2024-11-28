@@ -35,9 +35,10 @@ client
 let hasCompra = false;
 
 const myData = {
-  buscandoEstrategia: [],
+  candLesticksData: [],
   compras: [],
   ventas: [],
+  historial: [],
 };
 
 const fetchHistoricalData = async () => {
@@ -58,15 +59,32 @@ const fetchHistoricalData = async () => {
       data4h,
       data1d,
       data1w,
-      priceBTCUSDT
+      priceBTCUSDT,
+      myData.compras
     );
 
-    const GET_EMARSI15m = await estrategias.EMA_RSI("15m");
+    const hasEmaRsi15 = await estrategias.emarsi("15m");
 
-    if (GET_EMARSI15m) {
-      myData.compras.push(GET_EMARSI15m);
-      console.log("Compra Realizada en EMARSI15m: ", myData.compras[0]);
-    } else {
+    if (hasEmaRsi15) {
+      const isVenta = hasEmaRsi15.venta;
+      if (isVenta) {
+        console.log("Es Venta");
+        const ventaId = hasEmaRsi15.compra.binanceDataCompra.orderId;
+        const nuevoArr = myData.compras.filter(
+          (item) => item.binanceDataCompra.orderId !== ventaId
+        );
+        myData.compras = nuevoArr;
+
+        myData.historial.push(hasEmaRsi15);
+        console.log(hasEmaRsi15);
+      } else {
+        myData.compras.push(hasEmaRsi15);
+        console.log(
+          "Compra Realizada en EMARSI15m: ",
+          hasEmaRsi15.estrategiaSalida /*, myData.compras[0]*/
+        );
+      }
+    } else if (!hasEmaRsi15) {
       console.log("NO HAY ENTRADA EN EMARSI15m");
     }
 
@@ -75,13 +93,18 @@ const fetchHistoricalData = async () => {
       data15m: data15m[0],
       data4h: data4h[0],
     };
+    /*
+    console.log(
+      "estrategiaData",
+      myData.compras[0].estrategiaData,
+      "candLesticksCompra",
+      myData.compras[0].estrategiaData.candLesticksCompra
+    );*/
   } catch (error) {
     console.log("Error al obtener datos históricos:", error.message);
   }
 };
 
-if (!hasCompra) {
+setInterval(() => {
   fetchHistoricalData();
-} else if (hasCompra) {
-  console.log("Aplicar Enfoque en venta");
-}
+}, 3000);
