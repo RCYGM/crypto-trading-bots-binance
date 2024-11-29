@@ -113,35 +113,75 @@ class Indicadores {
     return rsi;
   }
 
-  calculateSopRes(maximo, minimo, cierre) {
-    if (maximo.length !== minimo.length || maximo.length !== cierre.length) {
-      throw new Error(
-        "Los arrays maximo, minimo y cierre deben tener la misma longitud."
-      );
+  calculateSopRes(preciosArr, precioActual) {
+    let r2 = 0;
+    let s2 = Infinity; // Inicializa como el valor más alto posible
+
+    for (let i = 0; i < preciosArr.length; i++) {
+      if (preciosArr[i] > r2) {
+        r2 = preciosArr[i];
+      }
+
+      if (preciosArr[i] < s2) {
+        s2 = preciosArr[i];
+      }
     }
 
-    if (
-      !maximo.every((val) => typeof val === "number") ||
-      !minimo.every((val) => typeof val === "number") ||
-      !cierre.every((val) => typeof val === "number")
-    ) {
-      throw new Error("Todos los elementos de los arrays deben ser números.");
-    }
+    const pp = (r2 + s2) / 2;
+    const r1 = (pp + r2) / 2;
+    const s1 = (pp + s2) / 2;
+    /*
+    console.log(
+      "Resistencia Superior",
+      r2,
+      "Resistencia Inferior",
+      r1,
+      "PP",
+      pp,
+      "Soporte Inferior",
+      s1,
+      "Soporte Superior",
+      s2
+    );
+*/
 
-    // Calcular PP
-    const pp =
-      (maximo.reduce((a, b) => a + b, 0) +
-        minimo.reduce((a, b) => a + b, 0) +
-        cierre.reduce((a, b) => a + b, 0)) /
-      (3 * maximo.length);
+    const buscarSoporteResistencia = () => {
+      let soporteResistenciaActual = {};
 
-    // Calcular R1, S1, R2, S2
-    const r1 = 2 * pp - Math.min(...minimo);
-    const s1 = 2 * pp - Math.max(...maximo);
-    const r2 = pp + (Math.max(...maximo) - Math.min(...minimo));
-    const s2 = pp - (Math.max(...maximo) - Math.min(...minimo));
+      if (precioActual >= r1 && precioActual <= r2) {
+        soporteResistenciaActual = {
+          resistenciaActual: r2,
+          soporteActual: r1,
+        };
+      }
 
-    return { pp, r1, s1, r2, s2 };
+      if (precioActual >= pp && precioActual <= r1) {
+        soporteResistenciaActual = {
+          resistenciaActual: r1,
+          soporteActual: pp,
+        };
+      }
+
+      if (precioActual >= s1 && precioActual <= pp) {
+        soporteResistenciaActual = {
+          resistenciaActual: pp,
+          soporteActual: s1,
+        };
+      }
+
+      if (precioActual >= s2 && precioActual <= s1) {
+        soporteResistenciaActual = {
+          resistenciaActual: s1,
+          soporteActual: s2,
+        };
+      }
+
+      return soporteResistenciaActual;
+    };
+
+    const ppActual = buscarSoporteResistencia();
+
+    return { ppActual, r2, r1, pp, s1, s2 };
   }
 }
 module.exports = Indicadores; // Exportar la Clase

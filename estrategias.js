@@ -29,31 +29,33 @@ class Estrategias {
     this.data1w = data1w;
     this.price = price;
     this.comprasArr = comprasArr;
+    this.indicadores5m = this.data5m[0].indicadores;
+    this.indicadores15m = this.data15m[0].indicadores;
+    this.indicadores30m = this.data30m[0].indicadores;
+    this.indicadores4h = this.data4h[0].indicadores;
+    this.indicadores1d = this.data1d[0].indicadores;
+    this.indicadores1w = this.data1w[0].indicadores;
   }
 
-  emarsi = async (tiempo) => {
+  emarsi = async (tiempo, buySell) => {
     try {
-      const indicadores5m = this.data5m[0].indicadores;
-      const indicadores15m = this.data15m[0].indicadores;
-      const indicadores4h = this.data4h[0].indicadores;
+      const { EMA10_15m, EMA50_15m, RSI14_15m, SR_15m, ULTIMASVELAS_15m } =
+        this.indicadores15m;
 
-      const { EMA10_5m, EMA50_5m, RSI14_5m, SP_5m, ULTIMASVELAS_5m } =
-        indicadores5m;
-
-      const { EMA10_15m, EMA50_15m, RSI14_15m, SP_15m, ULTIMASVELAS_15m } =
-        indicadores15m;
-
-      const { EMA10_4h, EMA50_4h, RSI14_4h, SP_4h, ULTIMASVELAS_4h } =
-        indicadores4h;
+      const { EMA10_4h, EMA50_4h, RSI14_4h, SR_4h, ULTIMASVELAS_4h } =
+        this.indicadores4h;
 
       // console.log("Esto es lo que quiero ver", this.data5m, this.data15m, this.data4h, this.price);
-      // console.log("4h", SP_4h, "15m", SP_15m, "5m", SP_5m);
+      // console.log("4h", SR_4h, "15m", SR_15m, "5m", SR_5m);
 
-      if (this.comprasArr.length >= 1) {
-        console.log("Tengo una venta en cola");
-        console.log(this.comprasArr.length);
-        console.log(this.comprasArr);
-        /*
+      if (buySell === "sell") {
+        // const price = await client.prices().then(prices => prices.BTCUSDT)
+        console.log("ESTOY EVALUANDO CONDICIONES DE VENTA");
+        const { stopLoss, perdidaMaxima } =
+          this.comprasArr[0].estrategiaData.estrategiaSalida;
+
+        if (this.price <= stopLoss) {
+          /*
           try {
             const orden = await client.order({
               symbol: "BTCUSDT",
@@ -65,6 +67,23 @@ class Estrategias {
             console.log("Error al realizar la compra", error.message);
           }
   */
+        }
+
+        const tendenciaBajista_15m = true; //EMA10_15m < EMA50_15m;
+
+        if (tendenciaBajista_15m) {
+        }
+
+        console.log("SOPORTE Y RESISTENCIA AQUI>>>>>>>>>>>>>.. ", SR_4h);
+
+        console.log(
+          "Stop Loss",
+          stopLoss,
+          "Perdida Maxima",
+          perdidaMaxima,
+          "Ultimas Velas 15m",
+          ULTIMASVELAS_15m
+        );
 
         const data = {
           venta: {
@@ -73,7 +92,7 @@ class Estrategias {
               data15m: this.data15m,
               data4h: this.data4h,
             },
-            binanceDataVenta: {
+            binanceOrdenData: {
               symbol: "BTC-VENDIDO",
               orderId: 100000000,
               orderListId: -1,
@@ -103,27 +122,12 @@ class Estrategias {
         return data;
       }
 
-      if (this.comprasArr.length < 1) {
+      if (buySell === "buy") {
         if (tiempo === "15m") {
-          /*
-          // Precio se encuentra cerca de un soporte identificado en el marco de 4 horas.
-  
-          const isCercaSoporte_s1s2 =
-            this.price < SP_4h.s1 + SP_4h.s1 * 1.35 && this.price > SP_4h.s1
-              ? true
-              : this.price < SP_4h.s2 + SP_4h.s2 * 1.35 && this.price > SP_4h.s2
-              ? true
-              : false;
-  
-          // EMA 10 está por encima de EMA 50, indicando una tendencia alcista general.
-  
-          const isSeñalAlcista = EMA10_4h.at(-1) > EMA50_4h.at(-1);
-  
-          // RSI en el marco mayor esta entre 40 y 60 (no en sobrecompra ni sobreventa).
-          const isRsiObtimo = RSI14_4h.at(-1) < 60 && RSI14_4h.at(-1) > 40;
-  
-          */
-
+          // BUSCAMOS LONG EN MARCOS 15M
+          if (EMA10_4h > EMA50_4h) {
+            // const soporteValido =
+          }
           // Confirmación en el Marco de 15 Minutos o 5 Minutos (Marco Menor)
           const isCercaSoporte_s1s2 = true;
           const isSeñalAlcista = true;
@@ -150,7 +154,7 @@ class Estrategias {
               const totalUSDT = 100; //await balances.balance("USDT");
 
               const perdidaMaxima = totalUSDT * 0.02;
-              const stopLoss = SP_4h.s1 - SP_4h.s1 * 0.02;
+              const stopLoss = SR_4h.s1 - SR_4h.s1 * 0.02;
               const distanciaStopLoss = this.price - stopLoss;
               const compra = perdidaMaxima / distanciaStopLoss;
 
@@ -180,11 +184,10 @@ class Estrategias {
           }
   */
               const data = {
-                estrategiaSalida: {
+                estrategiaData: {
                   id: "EMA-RSI-15M",
                   estrategiaSalida: {
-                    r1_4h: SP_4h.r1,
-                    pp_4h: SP_4h.pp,
+                    SR_4h: SR_4h,
                     stopLoss: stopLoss,
                     perdidaMaxima: perdidaMaxima,
                   },
@@ -194,7 +197,7 @@ class Estrategias {
                   data15m: this.data15m,
                   data4h: this.data4h,
                 },
-                binanceDataCompra: {
+                binanceOrdenData: {
                   symbol: "BTCUSDT",
                   orderId: 123456789,
                   orderListId: -1,

@@ -24,7 +24,7 @@ const indicadores = new Indicadores();
 class CandLesticksData {
   constructor() {}
 
-  getData = async (symbol, interval, limit) => {
+  getData = async (symbol, interval, limit, price) => {
     if (symbol === String) {
       throw new Error("Debes proporcionar un String en el primer parametro");
     }
@@ -45,18 +45,14 @@ class CandLesticksData {
       });
 
       if (velas) {
-        const priceHighArr = velas.map((item) => parseFloat(item.high));
-        const priceLowArr = velas.map((item) => parseFloat(item.low));
+        //const priceHighArr = velas.map((item) => parseFloat(item.high));
+        //const priceLowArr = velas.map((item) => parseFloat(item.low));
         const priceCloseArr = velas.map((item) => parseFloat(item.close));
 
         const ema10 = indicadores.calculateEMA(priceCloseArr, 10);
         const ema50 = indicadores.calculateEMA(priceCloseArr, 50);
         const rsi14 = indicadores.calculateRSI(priceCloseArr, 14);
-        const sopResObj = indicadores.calculateSopRes(
-          priceHighArr,
-          priceLowArr,
-          priceCloseArr
-        );
+        const sopResObj = indicadores.calculateSopRes(priceCloseArr, price);
         const ultimasVelas = velas.slice(-3);
 
         const data = [
@@ -68,7 +64,7 @@ class CandLesticksData {
               [`EMA50_${interval}`]: ema50,
               [`RSI14_${interval}`]: rsi14,
               [`ULTIMASVELAS_${interval}`]: ultimasVelas,
-              [`SP_${interval}`]: sopResObj,
+              [`SR_${interval}`]: sopResObj,
             },
           },
         ];
