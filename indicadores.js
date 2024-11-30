@@ -145,7 +145,7 @@ class Indicadores {
     );
 */
 
-    const buscarSoporteResistencia = () => {
+    const buscarSoporteResistenciaActual = () => {
       let soporteResistenciaActual = {};
 
       if (precioActual >= r1 && precioActual <= r2) {
@@ -179,9 +179,87 @@ class Indicadores {
       return soporteResistenciaActual;
     };
 
-    const ppActual = buscarSoporteResistencia();
+    const BuscarZonas = () => {
+      let zonas = {};
+      let valorZona1 = 0;
+      let valorZona2 = 0;
+      let valorZona3 = 0;
+      let valorZona4 = 0;
+      const { resistenciaActual, soporteActual } =
+        buscarSoporteResistenciaActual();
 
-    return { ppActual, r2, r1, pp, s1, s2 };
+      const distanciaTotal = resistenciaActual - soporteActual;
+      const valorCadaZona = distanciaTotal / 4;
+
+      valorZona1 = valorCadaZona;
+      valorZona2 = valorCadaZona * 2;
+      valorZona3 = valorCadaZona * 3;
+      valorZona4 = valorCadaZona * 4;
+
+      const isZona1 =
+        precioActual >= soporteActual &&
+        precioActual <= soporteActual + valorZona1;
+
+      const isZona2 =
+        precioActual >= soporteActual + valorZona1 &&
+        precioActual <= soporteActual + valorZona2;
+
+      const isZona3 =
+        precioActual >= soporteActual + valorZona2 &&
+        precioActual <= soporteActual + valorZona3;
+
+      const isZona4 =
+        precioActual >= soporteActual + valorZona3 &&
+        precioActual <= soporteActual + valorZona4;
+
+      zonas = {
+        isZona1,
+        isZona2,
+        isZona3,
+        isZona4,
+        valorZonas: {
+          valorZona1,
+          valorZona2,
+          valorZona3,
+          valorZona4,
+        },
+      };
+
+      return zonas;
+    };
+
+    const { resistenciaActual, soporteActual } =
+      buscarSoporteResistenciaActual();
+    const { isZona1, isZona2, isZona3, isZona4, valorZonas } = BuscarZonas();
+
+    return {
+      resistenciaActual,
+      soporteActual,
+      isZona1,
+      isZona2,
+      isZona3,
+      isZona4,
+      valorZonas,
+      contextoGeneral: { r2, r1, pp, s1, s2 },
+    };
+  }
+  calculateSMA_RSI(rsi, periodos) {
+    const valoresParaSMA = rsi.slice(-periodos);
+    const sma = valoresParaSMA.reduce((a, b) => a + b, 0) / periodos;
+    return sma;
+  }
+  calculateHasVolumen(ultimasVelas) {
+    const ultimasVelasArr = ultimasVelas.map((vela) => parseFloat(vela.volume));
+    const hasVolumen3velas =
+      ultimasVelasArr[0] < ultimasVelasArr[1] &&
+      ultimasVelasArr[1] < ultimasVelasArr[2];
+    const hasVolumen5velas =
+      ultimasVelasArr[0] < ultimasVelasArr[1] &&
+      ultimasVelasArr[1] < ultimasVelasArr[2] &&
+      ultimasVelasArr[2] < ultimasVelasArr[3] &&
+      ultimasVelasArr[3] < ultimasVelasArr[4];
+
+    return { hasVolumen3velas, hasVolumen5velas };
   }
 }
 module.exports = Indicadores; // Exportar la Clase
