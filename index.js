@@ -166,12 +166,12 @@ const fetchHistoricalData = async () => {
         }
       }
     }
-
+    /*
     myData.buscandoEstrategia = {
       data5m: data5m[0],
       data15m: data15m[0],
       data4h: data4h[0],
-    };
+    };*/
     /*
     console.log(
       "estrategiaData",

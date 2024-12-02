@@ -83,15 +83,6 @@ class CandLesticksData {
         const smaRsi = indicadores.calculateSMA_RSI(rsi14, 14);
         const getHasVolumen = indicadores.calculateHasVolumen(velas.slice(-5));
 
-        let backtestingPrice = false;
-        if (!price) {
-          const sopResObj = indicadores.calculateSopRes(
-            priceCloseArr,
-            priceCloseArr.at(-1)
-          );
-          backtestingPrice = sopResObj;
-        }
-
         const sopResObj = indicadores.calculateSopRes(priceCloseArr, price);
         const data = [
           {

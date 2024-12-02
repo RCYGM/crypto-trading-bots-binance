@@ -217,9 +217,9 @@ class Estrategias {
           const prueba = false;
           if (
             (SR_4h.isZona1 &&
-              EMA10_4h > EMA50_4h &&
-              RSI14_4h > 40 &&
-              RSI14_4h < 60) ||
+              EMA10_4h.at(-1) > EMA50_4h.at(-1) &&
+              RSI14_4h.at(-1) > 40 &&
+              RSI14_4h.at(-1) < 60) ||
             prueba
           ) {
             console.log("Precio en la zona1");
