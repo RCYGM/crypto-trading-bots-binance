@@ -49,9 +49,20 @@ class Estrategias {
     this.indicadores4h = this.data4h[0].indicadores;
     this.indicadores1d = this.data1d[0].indicadores;
     this.indicadores1w = this.data1w[0].indicadores;
+
+    //>>>>>>>>>>>>>>>>>>>>> Backtesting Data;
+
+    this.dineoDisponible = 100;
+    this.ordenId = 0;
+    this.stopLossAlcanzado = false;
+
+    this.comprasRealizadas = 0;
+    this.ventasRealizadas = 0;
   }
 
-  emarsi = async (tiempo, buySell) => {
+  emarsi = (tiempo, buySell) => {
+    console.log("Estoy dentro de la estrategia del backtesting emarsi");
+
     try {
       const {
         EMA10_5m,
@@ -70,16 +81,7 @@ class Estrategias {
         SMA_RSI_15m,
         ultimasVelasData_15m,
       } = this.indicadores15m;
-      /*
-        console.log(
-          "Informacion Velas 15m",
-          EMA10_15m,
-          EMA50_15m,
-          RSI14_15m,
-          SR_15m,
-          SMA_RSI_15m,
-          ultimasVelasData_15m
-        );*/
+
       const {
         EMA10_4h,
         EMA50_4h,
@@ -89,33 +91,71 @@ class Estrategias {
         ultimasVelasData_4h,
       } = this.indicadores4h;
 
-      const isAlcista = (ema10, ema50) => {
+      console.log(
+        "EVALUANDO SI LA DATA LLEGA COMPLETA Y BIEN",
+        "4H",
+        "EMA 10",
+        EMA10_4h,
+        "EMA 50",
+        EMA50_4h,
+        "RSI14",
+        RSI14_4h,
+        "SR_4H",
+        SR_4h,
+        "SMA_RSI",
+        SMA_RSI_4h,
+        "ULTIMASVELAS",
+        ultimasVelasData_4h,
+
+        "15M",
+        "EMA 10",
+        EMA10_15m,
+        "EMA 50",
+        EMA50_15m,
+        "RSI14",
+        RSI14_15m,
+        "SR_15m",
+        SR_15m,
+        "SMA_RSI",
+        SMA_RSI_15m,
+        "ULTIMASVELAS",
+        ultimasVelasData_15m
+      );
+
+      const hasCruceAlcista = (ema10, ema50) => {
+        console.log("ESTA ES LA EMA DE 10: ", ema10);
+        console.log("ESTA ES LA EMA DE 50: ", ema50);
         if (ema10.length < 2 || ema50.length < 2) {
-          throw new Error("Las EMAs necesitan al menos dos valores.");
+          throw new Error(
+            "Las EMAs en hasCruceAlcista necesitan al menos dos valores."
+          );
         }
         return ema10.at(-1) > ema50.at(-1) && ema10.at(-2) < ema50.at(-2);
       };
-      const isBajista = (ema10, ema50) => {
+      const hasCruceBajista = (ema10, ema50) => {
         if (ema10.length < 2 || ema50.length < 2) {
-          throw new Error("Las EMAs necesitan al menos dos valores.");
+          throw new Error(
+            "Las EMAs en hasCruceBajista necesitan al menos dos valores."
+          );
         }
         return ema10.at(-1) < ema50.at(-1) && ema10.at(-2) > ema50.at(-2);
       };
 
-      // console.log("Esto es lo que quiero ver", this.data5m, this.data15m, this.data4h, this.price);
-      // console.log("4h", SR_4h, "15m", SR_15m, "5m", SR_5m);
-
       if (buySell === "sell") {
-        // const price = await client.prices().then(prices => prices.BTCUSDT)
-        console.log("ESTOY EVALUANDO CONDICIONES DE VENTA");
-        const myOperacion = this.comprasArr.find(
-          (operacion) => operacion.operacionData.id === "EMA-RSI-15M"
-        );
-        const { stopLoss, puedoLiquidarMitad } = myOperacion.estrategiaSalida;
-        console.log("Esta es la Orden que Voy a procesar: ", myOperacion);
+        if (tiempo === "15m") {
+          const myOperacion = this.comprasArr.find(
+            (operacion) => operacion.operacionData.id === "EMA-RSI-15M"
+          );
 
-        if (this.price <= stopLoss) {
-          /*
+          const { stopLoss, puedoLiquidarMitad } = myOperacion.estrategiaSalida;
+          const precioCompra = myOperacion.binanceOrdenData.fills.price;
+          const { capitalOperacion } = myOperacion.backtestingData;
+          //  console.log("Esta es la Orden que Voy a procesar: ", myOperacion);
+
+          if (this.price <= stopLoss) {
+            this.stopLossAlcanzado = true;
+
+            /*
             try {
               const orden = await client.order({
                 symbol: "BTCUSDT",
@@ -127,40 +167,40 @@ class Estrategias {
               console.log("Error al realizar la compra", error.message);
             }
     */
-        }
-        const prueba = false;
-        if (
-          (this.price > myOperacion.estrategiaSalida.resistenciaZona3 &&
-            puedoLiquidarMitad) ||
-          (RSI14_15m.at(-1) > 60 && puedoLiquidarMitad) ||
-          prueba
-        ) {
-          myOperacion.estrategiaSalida.puedoLiquidarMitad = false;
-          // liquida el 50% y actualiza el objeto para que no liquide el otro 50% en la siguiente vuelta
-
-          /*
-            try {
-              const orden = await client.order({
-                symbol: "BTCUSDT",
-                side: "SELL",
-                type: "MARKET",
-                quantity: 0.001,
-              });
-            } catch (error) {
-              console.log("Error al realizar la compra", error.message);
-            }
-    */
-        }
-
-        if (!myOperacion.estrategiaSalida.puedoLiquidarMitad) {
-          console.log("Segundo IF superado");
+          }
+          const prueba = false;
           if (
-            (RSI14_15m.at(-1) > 70 && SMA_RSI_15m < RSI14_15m.at(-1)) ||
-            isBajista(EMA10_15m, EMA50_15m) ||
+            (this.price > myOperacion.estrategiaSalida.resistenciaZona3 &&
+              puedoLiquidarMitad) ||
+            (RSI14_15m.at(-1) > 60 && puedoLiquidarMitad) ||
             prueba
           ) {
-            // liquida el 100%
-            /*try {
+            myOperacion.estrategiaSalida.puedoLiquidarMitad = false;
+            // liquida el 50% y actualiza el objeto para que no liquide el otro 50% en la siguiente vuelta
+
+            /*
+            try {
+              const orden = await client.order({
+                symbol: "BTCUSDT",
+                side: "SELL",
+                type: "MARKET",
+                quantity: 0.001,
+              });
+            } catch (error) {
+              console.log("Error al realizar la compra", error.message);
+            }
+    */
+          }
+
+          if (!myOperacion.estrategiaSalida.puedoLiquidarMitad) {
+            console.log("Segundo IF superado");
+            if (
+              (RSI14_15m.at(-1) > 70 && SMA_RSI_15m < RSI14_15m.at(-1)) ||
+              hasCruceBajista(EMA10_15m, EMA50_15m) ||
+              prueba
+            ) {
+              // liquida el 100%
+              /*try {
               const orden = await client.order({
                 symbol: "BTCUSDT",
                 side: "SELL",
@@ -172,46 +212,65 @@ class Estrategias {
             }
     */
 
-            const orden = {
-              symbol: "BTCUSDT",
-              orderId: 123456789,
-              orderListId: -1,
-              clientOrderId: "abc123",
-              transactTime: 1732761123456,
-              price: "0.00000000",
-              origQty: "0.001",
-              executedQty: "0.001",
-              cummulativeQuoteQty: "50.0",
-              status: "FILLED",
-              timeInForce: "GTC",
-              type: "MARKET",
-              side: "BUY",
-              fills: [
-                {
-                  price: "50000.00",
-                  qty: "0.001",
-                  commission: "0.00000005",
-                  commissionAsset: "BTC",
-                  tradeId: 987654321,
-                },
-              ],
-            };
+              this.ventasRealizadas += 1;
+              this.dineoDisponible +=
+                capitalOperacion + (this.price - precioCompra);
+              const orden = {
+                symbol: "BTCUSDT",
+                orderId: (this.ordenId += 1),
+                orderListId: -1,
+                clientOrderId: "abc123",
+                transactTime: 1732761123456,
+                price: "0.00000000",
+                origQty: "0.001",
+                executedQty: "0.001",
+                cummulativeQuoteQty: "50.0",
+                status: "FILLED",
+                timeInForce: "GTC",
+                type: "MARKET",
+                side: "BUY",
+                fills: [
+                  {
+                    price: this.price,
+                    qty: "0.001",
+                    commission: "0.00000005",
+                    commissionAsset: "BTC",
+                    tradeId: 987654321,
+                  },
+                ],
+              };
 
-            myOperacion.operacionData.status = "finalizado";
+              myOperacion.operacionData.status = "finalizado";
 
-            const data = {
-              venta: {
-                candLesticksVenta: {
-                  data5m: this.data5m,
-                  data15m: this.data15m,
-                  data4h: this.data4h,
+              const data = {
+                venta: {
+                  candLesticksVenta: {
+                    data5m: this.data5m,
+                    data15m: this.data15m,
+                    data4h: this.data4h,
+                  },
+                  binanceOrdenData: orden,
                 },
-                binanceOrdenData: orden,
-              },
-              compra: myOperacion,
-            };
-            console.log("Tercer IF superado");
-            return data;
+                compra: myOperacion,
+                backtestingData: {
+                  hasStopsLoss: this.stopLossAlcanzado,
+                  resultado: this.price - precioCompra,
+                  myCapital: this.dineoDisponible,
+                  fechaApertura:
+                    myOperacion.candLesticksCompra.data15m.slice(-1)[0]
+                      .closeTime,
+                  fechaCierre: this.data15m.slice(-1)[0].closeTime,
+                  tiempoOperacion:
+                    (myOperacion.candLesticksCompra.data15m.slice(-1)[0]
+                      .closeTime -
+                      this.data15m.slice(-1)[0].closeTime) /
+                    (1000 * 60 * 60),
+                },
+              };
+              this.stopLossAlcanzado = false;
+              console.log("Tercer IF superado");
+              return data;
+            }
           }
         }
       }
@@ -219,13 +278,9 @@ class Estrategias {
       if (buySell === "buy") {
         if (tiempo === "15m") {
           // BUSCAMOS LONG EN MARCOS 15M
-          console.log(
-            "Objeto soporte Resistencia: ",
-            SR_4h,
-            "Ultimas Velas 15m",
-            ultimasVelasData_15m
-          );
-          const prueba = false;
+
+          const prueba = true;
+
           if (
             (SR_4h.isZona1 &&
               EMA10_4h.at(-1) > EMA50_4h.at(-1) &&
@@ -233,22 +288,23 @@ class Estrategias {
               RSI14_4h.at(-1) < 60) ||
             prueba
           ) {
-            console.log("Precio en la zona1");
+            console.log(`CONDICION IF #1 SUPERADA: SR_4h.isZona1 &&
+              EMA10_4h.at(-1) > EMA50_4h.at(-1) &&
+              RSI14_4h.at(-1) > 40 &&
+              RSI14_4h.at(-1) < 60)`);
 
-            console.log(
-              "EMA10_4h > EMA50_4h && RSI14_4h > 40 && RSI14_4h < 60"
-            );
             if (
-              (isAlcista(EMA10_15m, EMA50_15m) &&
+              (hasCruceAlcista(EMA10_15m, EMA50_15m) &&
                 RSI14_15m.at(-1) > 40 &&
                 RSI14_15m.at(-1) < 50 &&
                 ultimasVelasData_15m.hasVolumen) ||
               prueba
             ) {
-              console.log(
-                "EMA10_15m > EMA50_15m && RSI14_15m > 40 && RSI14_15m < 50"
-              );
-              const totalUSDT = 100; //await balances.balance("USDT");
+              console.log(`CONDICION IF #2 SUPERADA: (hasCruceAlcista(EMA10_15m, EMA50_15m) &&
+                RSI14_15m.at(-1) > 40 &&
+                RSI14_15m.at(-1) < 50 &&
+                ultimasVelasData_15m.hasVolumen)`);
+              const totalUSDT = this.dineoDisponible; //await balances.balance("USDT");
 
               const perdidaMaxima = totalUSDT * 0.02;
               const stopLoss =
@@ -257,19 +313,20 @@ class Estrategias {
               const compra = perdidaMaxima / distanciaStopLoss;
 
               console.log(
+                "VIENDO LOS DATOS DE LA COMPRA: ",
+                "PERDIDA MAXIMA",
+                perdidaMaxima,
                 "stopLoss",
                 stopLoss,
-                "perdida Maxima",
-                perdidaMaxima,
                 "distanciaStopLoss",
                 distanciaStopLoss,
-                "Tamaño de la Posicion",
+                "compra",
                 compra,
-                "compra en USDT",
+                "COMPRA USDT",
                 compra * this.price
               );
 
-              if (compra) {
+              if ((this.price > stopLoss && compra > 0) || prueba) {
                 /*try {
                       const orden = await client.order({
                         symbol: "BTCUSDT",
@@ -280,9 +337,12 @@ class Estrategias {
                     } catch (error) {
                       console.log("Error al realizar la compra", error.message);
                     }*/
+
+                this.comprasRealizadas += 1;
+
                 const orden = {
                   symbol: "BTCUSDT",
-                  orderId: 123456789,
+                  orderId: (this.ordenId += 1),
                   orderListId: -1,
                   clientOrderId: "abc123",
                   transactTime: 1732761123456,
@@ -296,7 +356,7 @@ class Estrategias {
                   side: "BUY",
                   fills: [
                     {
-                      price: "50000.00",
+                      price: this.price,
                       qty: "0.001",
                       commission: "0.00000005",
                       commissionAsset: "BTC",
@@ -331,9 +391,18 @@ class Estrategias {
                       data4h: this.data4h,
                     },
                     binanceOrdenData: orden,
+                    backtestingData: {
+                      capitalOperacion: compra * this.price,
+                    },
                   };
+                  console.log("DATA DE RETORNO DE LA COMPRA: ", data);
                   return data;
                 }
+              } else {
+                console.warn(
+                  "Condiciones no válidas para la compra:",
+                  `Precio actual (${this.price}) debe estar por encima del stopLoss (${stopLoss}), y compra (${compra}) debe ser positiva.`
+                );
               }
             }
           }
@@ -390,6 +459,8 @@ class Backtesting {
   }
 
   async emarsi15m(symbol, startTime, endTime) {
+    console.log("Entre en emarsi15m");
+
     const getVelasData = async (symbol, interval, startTime, endTime) => {
       const UN_ANO_MS = 365 * 24 * 60 * 60 * 1000; // 365 días
 
@@ -435,24 +506,57 @@ class Backtesting {
           break;
         }
       }
+      // console.log("Estas son todas las velas de esta solicitud: ", totalVelas);
+
       return totalVelas;
     };
 
+    console.log("Voy a iniciar a buscar todas las velas que necesito");
+    console.log("Voy a buscar totalData15m");
+
     const totalData15m = await getVelasData(symbol, "15m", startTime, endTime);
+    //  console.log("Esto tiene totalData15m" /*totalData15m*/);
+
+    console.log("Voy a buscar totalData4h");
+
     const totalData4h = await getVelasData(symbol, "4h", startTime, endTime);
 
-    for (let i = 50; i < totalData15m.length; i++) {
-      const myData = {
-        candLesticksData: [],
-        compras: [],
-        ventas: [],
-        historial: [],
-      };
+    // console.log("Esto tiene totalData4h" /*totalData4h*/);
+    console.log("Ya tengo todas las velas que necesito");
 
-      const priceBTCUSDT = totalData15m[i].closeTime;
+    console.log(`Total de velas 15m: ${totalData15m.length}`);
+    console.log(`Total de velas 4h: ${totalData4h.length}`);
 
-      const obtenerIndicadores = (velas) => {
+    const menorLongitud = Math.min(totalData15m.length, totalData4h.length);
+
+    console.log(menorLongitud);
+
+    const myData = {
+      candLesticksData: [],
+      compras: [],
+      ventas: [],
+      historial: [],
+    };
+
+    for (let i = 51; i < menorLongitud; i++) {
+      console.log("estoy dentro del for");
+
+      //console.log("Estoy dentro del bucle");
+      console.log(`Índice actual: ${i}`);
+
+      const obtenerIndicadores = (velas, interval) => {
+        const priceBTCUSDT = velas.slice(-1)[0].close;
+        console.log("Precio de cierre: ", priceBTCUSDT);
         const priceCloseArr = velas.map((item) => parseFloat(item.close));
+
+        console.log("ESTE ES priceCloseArr", priceCloseArr.length);
+
+        /*console.log(
+          "Estan son las Velas que voy a procesar",
+          velas,
+          "y estoy trabajando este intervalo: ",
+          interval
+        );*/
 
         const ema10 = indicadores.calculateEMA(priceCloseArr, 10);
         const ema50 = indicadores.calculateEMA(priceCloseArr, 50);
@@ -464,6 +568,7 @@ class Backtesting {
           priceCloseArr,
           priceBTCUSDT
         );
+
         const data = [
           {
             candLesticksInterval: interval,
@@ -483,19 +588,30 @@ class Backtesting {
               },
               [`SR_${interval}`]: sopResObj,
             },
+            backtestingPrice: priceBTCUSDT,
           },
         ];
 
-        // console.log("Datos de las Velas Empaquetados y enviados");
+        //console.log("Hay indicadores? ", data[0].indicadores);
 
         return data;
       };
-      const ultimasVelas15m = totalData15m.slice(i - 50, i);
-      const ultimasVelas4h = totalData4h.slice(i - 50, i);
 
-      const CopiaFake = obtenerIndicadores(ultimasVelas15m);
-      const data15m = obtenerIndicadores(ultimasVelas15m);
-      const data4h = obtenerIndicadores(ultimasVelas4h);
+      const ultimasVelas15m = totalData15m.slice(i - 51, i);
+      //console.log("Estas son las ultimas velas de 15m", ultimasVelas15m);
+
+      const ultimasVelas4h = totalData4h.slice(i - 51, i);
+      //console.log("Estas son las ultimas velas de 4h", ultimasVelas4h);
+
+      console.log(`Tamaño de ultimasVelas15m: ${ultimasVelas15m.length}`);
+      console.log(`Tamaño de ultimasVelas4h: ${ultimasVelas4h.length}`);
+
+      const CopiaFake = obtenerIndicadores(ultimasVelas15m, "15m");
+      const data15m = obtenerIndicadores(ultimasVelas15m, "15m");
+      const data4h = obtenerIndicadores(ultimasVelas4h, "4h");
+
+      console.log("data15m: ", data15m);
+      console.log("data4h: ", data4h);
 
       const estrategias = new Estrategias(
         CopiaFake,
@@ -505,52 +621,36 @@ class Backtesting {
         data4h,
         CopiaFake,
         CopiaFake,
-        priceBTCUSDT,
+        data15m[0].backtestingPrice,
         myData.compras
       );
 
+      //console.log("class estrategias: ", estrategias);
+
       // Busca compra
       if (myData.compras.length < 1) {
-        console.log("Estoy Buscando una estrategia");
+        console.log("myData.compras.length:", myData.compras.length);
 
-        const BUY_EMARSI_15M = await estrategias.emarsi("15m", "buy");
+        console.log("Voy a buscar una compra");
+        console.log("Estrategias instance:", estrategias);
+        const BUY_EMARSI_15M = estrategias.emarsi("15m", "buy");
+        console.log("HE COMPRADO");
 
+        console.log(BUY_EMARSI_15M);
         if (BUY_EMARSI_15M) {
-          console.log(">>>>> COMPRE  EN BUY_EMARSI_15M");
           myData.compras.push(BUY_EMARSI_15M);
-          console.log(
-            ">>>>> LO ENVIE A LA LISTA DE COMPRAS Y ESTO ES LO QUE TIENE LA LISTA: ",
-            myData.compras
-          );
-        } else {
-          console.log(">>>>> NO ENCONTRE OPORTUNIDAD");
         }
+      } else {
+        console.log("NO ENCONTRE UNA COMPRA");
       }
 
       // Busca Venta
-      if (myData.compras.length >= 1) {
-        console.log(
-          "Tengo una lista de compra pendiente de: ",
-          myData.compras.length
-        );
-
+      /*if (myData.compras.length >= 1) {
         for (let i = 0; i < myData.compras.length; i++) {
-          console.log(
-            "Voy a analizar la estrategia de cada una de las compras para ver si cumple con la estrategia de salida"
-          );
-
           if (myData.compras[i].operacionData.id === "EMA-RSI-15M") {
-            console.log(
-              "Estoy Analizando la compra con la estrategia id >EMA-RSI-15M<"
-            );
-
             const SELL_EMARSI_15 = await estrategias.emarsi("15m", "sell");
 
             if (SELL_EMARSI_15) {
-              console.log(
-                "La estrategia con id >EMA-RSI-15M se cumplio con EXITO<"
-              );
-
               if (SELL_EMARSI_15.compra.operacionData.status === "finalizado") {
                 // ELIMINO
                 const ventaId = SELL_EMARSI_15.compra.binanceOrdenData.orderId;
@@ -558,28 +658,151 @@ class Backtesting {
                   (item) => item.binanceOrdenData.orderId !== ventaId
                 );
                 myData.compras = nuevoArr;
-                myData.historial.push(SELL_EMARSI_15);
-                console.log(
-                  "Lista de compra pendiente: ",
-                  myData.compras.length
-                );
-                console.log("Historial de operaciones: ", myData.historial);
+                this.historialOperaciones.push(SELL_EMARSI_15);
               }
-            } else {
-              console.log(">>>>> NO HUBO VENTA");
             }
           }
         }
+      }*/
+      if (i === 52) {
+        /* console.error(
+            `llegue al final de menorLongitud que es ${menorLongitud} y el indice actual es ${i}`
+          );*/
+
+        console.log("FIN DEL BACKTESTING:  >>>>>>>>>>");
+        console.log("COMPRAS ACTUALES: ", myData.compras);
+
+        return this.historialOperaciones;
+        break; // Salta esta iteración del bucle
       }
     }
+
+    /*
+    this.gananciaTotal = this.historialOperaciones
+      .map((operacion) => operacion.backtestingData.resultado)
+      .reduce((a, b) => a + b, 0);
+
+    const operacionesPerdidas =
+      this.historialOperaciones.backtestingData.filter(
+        (operacion) => operacion.resultado < 0
+      );
+    this.perdidaTotal = operacionesPerdidas.backtestingData.resultado.reduce(
+      (a, b) => a + b,
+      0
+    );
+    this.roi =
+      ((this.historialOperaciones.backtestingData[
+        this.historialOperaciones.backtestingData.length - 1
+      ].myCapital -
+        100) /
+        100) *
+      100;
+
+    const operacionesGanadas = this.historialOperaciones.backtestingData.filter(
+      (operacion) => operacion.resultado > 0
+    );
+
+    this.hitRate =
+      (operacionesGanadas / this.historialOperaciones.length) * 100;
+
+    this.gananciaPromedio = this.gananciaTotal / operacionesGanadas;
+    this.perdidaPromedio = this.perdidaTotal / operacionesPerdidas;
+
+    this.totalOperaciones = this.historialOperaciones.length;
+    this.operacionesGanadoras = operacionesGanadas.length;
+    this.operacionesPerdedoras = operacionesPerdidas.length;
+    this.mayorGanancia = this.historialOperaciones.reduce((max, operacion) => {
+      return operacion.backtestingData.resultado > max.backtestingData.resultado
+        ? operacion
+        : max;
+    }, this.historialOperaciones[0]);
+
+    this.mayorPerdida = this.historialOperaciones.reduce((min, operacion) => {
+      return operacion.backtestingData.resultado < min.backtestingData.resultado
+        ? operacion
+        : min;
+    }, this.historialOperaciones[0]);
+
+    // Drawdown
+    this.capitalMaximo = this.historialOperaciones.reduce((max, operacion) => {
+      return operacion.backtestingData.myCapital > max.backtestingData.myCapital
+        ? operacion
+        : max;
+    }, this.historialOperaciones[0]);
+
+    this.capitalMinimo = this.historialOperaciones.reduce((min, operacion) => {
+      return operacion.backtestingData.myCapital < min.backtestingData.myCapital
+        ? operacion
+        : min;
+    }, this.historialOperaciones[0]);
+
+    this.drawdownMaximo =
+      ((this.capitalMaximo - this.capitalMinimo) / this.capitalMaximo) * 100;
+
+    // Análisis Temporal
+    this.tiempoTotalOperaciones =
+      this.historialOperaciones.backtestingData.tiempoOperacion.reduce(
+        (a, b) => a + b,
+        0
+      );
+
+    this.duracionPromedioOperaciones =
+      this.tiempoTotalOperaciones / this.historialOperaciones.length;
+
+    this.frecuenciaOperaciones =
+      this.historialOperaciones.length / startTime - endTime; // Promedio de operaciones por unidad de tiempo: totalOperaciones / periodoTotalbacktesting.
+
+    // Validación de la Estrategia
+    // this.condicionesEntradaCumplidas = 0; // Número de veces que se cumplieron las condiciones de entrada.
+    // this.condicionesSalidaCumplidas = 0; // Número de veces que se cumplieron las condiciones de salida.
+    this.stopLossActivados = this.historialOperaciones.filter(
+      (operacion) => operacion.backtestingData.hasStopsLoss === true
+    ).length; // Número de veces que el stop-loss fue activado: operaciones cerradas por stop-loss.*/
+    /*
+    const data = {
+      operacionesGanadas: operacionesGanadas,
+      gananciaTotal: this.gananciaTotal,
+      gananciaPromedio: this.gananciaPromedio,
+
+      operacionesPerdidas: operacionesPerdidas,
+      perdidaTotal: this.perdidaTotal,
+      perdidaPromedio: this.perdidaPromedio,
+
+      totalOperaciones: this.totalOperaciones,
+      operacionesGanadoras: this.operacionesGanadoras,
+      operacionesPerdedoras: this.operacionesPerdedoras,
+      mayorGanancia: this.mayorGanancia,
+      mayorPerdida: this.mayorPerdida,
+      roi: this.roi,
+      hitRate: this.hitRate,
+
+      capitalMaximo: this.capitalMaximo,
+      capitalMinimo: this.capitalMinimo,
+      drawdownMaximo: this.drawdownMaximo,
+
+      tiempoTotalOperaciones: this.tiempoTotalOperaciones,
+      duracionPromedioOperaciones: this.duracionPromedioOperaciones,
+      frecuenciaOperaciones: this.frecuenciaOperaciones,
+      stopLossActivados: this.stopLossActivados,
+    };
+    return data;*/
   }
 }
 
-const startTime = new Date("2024-05-01T00:00:00.000Z").getTime();
+const startTime = new Date("2024-11-01T00:00:00.000Z").getTime();
 const endTime = new Date().getTime();
 const backtesting = new Backtesting();
 console.log("start Time", startTime, "end Time", endTime);
 
-const prueba = backtesting.emarsi15m("BTCUSDT", startTime, endTime);
-
-console.log(prueba);
+(async () => {
+  try {
+    const resultado = await backtesting.emarsi15m(
+      "BTCUSDT",
+      startTime,
+      endTime
+    );
+    console.log(resultado);
+  } catch (error) {
+    console.error("Error en backtesting:", error.message);
+  }
+})();

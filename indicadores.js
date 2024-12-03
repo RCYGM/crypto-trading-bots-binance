@@ -18,10 +18,11 @@ class Indicadores {
 
   // Método para calcular la EMA
   calculateEMA(preciosArr, periodos) {
-    if (!Array.isArray(preciosArr) || preciosArr.length < periodos) {
-      throw new Error(
-        "Debes proporcionar un array válido con suficientes datos."
-      );
+    if (!Array.isArray(preciosArr)) {
+      throw new Error("Debes proporcionar un array válido");
+    }
+    if (preciosArr.length < periodos) {
+      throw new Error("Debes proporcionar un con suficientes datos.");
     }
     if (typeof periodos !== "number" || periodos <= 0) {
       throw new Error("El período debe ser un número mayor que 0.");
@@ -32,6 +33,13 @@ class Indicadores {
       )
     ) {
       throw new Error("El array debe contener únicamente números válidos.");
+    }
+    if (preciosArr.length < periodos + 1) {
+      throw new Error(
+        `Se necesitan al menos ${
+          periodos + 1
+        } datos para calcular la EMA. Proporcionaste ${preciosArr.length}.`
+      );
     }
 
     const multiplicador = 2 / (periodos + 1); // Factor de suavizado
