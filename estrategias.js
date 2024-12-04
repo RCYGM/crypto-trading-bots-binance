@@ -144,7 +144,7 @@ class Estrategias {
         if (!myOperacion.estrategiaSalida.puedoLiquidarMitad) {
           console.log("Segundo IF superado");
           if (
-            (RSI14_15m.at(-1) > 70 && SMA_RSI_15m < RSI14_15m.at(-1)) ||
+            (RSI14_15m.at(-1) > 70 && RSI14_15m.at(-1) < SMA_RSI_15m) ||
             isBajista(EMA10_15m, EMA50_15m) ||
             prueba
           ) {
@@ -209,11 +209,20 @@ class Estrategias {
         if (tiempo === "15m") {
           // BUSCAMOS LONG EN MARCOS 15M
           console.log(
+            "EMA10_15m.at(-1)",
+            EMA10_15m.at(-1),
+            "EMA50_15m.at(-1)",
+            EMA50_15m.at(-1),
+            "RSI14_15m",
+            RSI14_15m.at(-1)
+          );
+          console.log(
             "Objeto soporte Resistencia: ",
             SR_4h,
             "Ultimas Velas 15m",
             ultimasVelasData_15m
           );
+
           const prueba = false;
           if (
             (SR_4h.isZona1 &&

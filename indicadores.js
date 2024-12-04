@@ -258,6 +258,7 @@ class Indicadores {
   }
   calculateHasVolumen(ultimasVelas) {
     const ultimasVelasArr = ultimasVelas.map((vela) => parseFloat(vela.volume));
+
     const hasVolumen3velas =
       ultimasVelasArr[0] < ultimasVelasArr[1] &&
       ultimasVelasArr[1] < ultimasVelasArr[2];
