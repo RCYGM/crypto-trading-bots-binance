@@ -129,6 +129,7 @@ class Estrategias {
           throw new Error(
             "Las EMAs en hasCruceAlcista necesitan al menos dos valores."
           );
+          4;
         }
         /* console.log(
           "ESTE ES EL LOG DEL return DE hasCruceAlcista:",

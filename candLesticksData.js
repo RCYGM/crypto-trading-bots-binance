@@ -70,7 +70,7 @@ class CandLesticksData {
         velas = getVelas;
       }
 
-      if (velas) {
+      if (velas && price) {
         // console.log("Velas Obtenidas con Exito");
 
         //const priceHighArr = velas.map((item) => parseFloat(item.high));
