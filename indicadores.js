@@ -1,7 +1,5 @@
 class Indicadores {
-  constructor() {
-    // El constructor ahora no necesita manejar un array de precios.
-  }
+  constructor() {}
 
   // Método para calcular el SMA inicial (primer valor para EMA)
   calculateSMA(preciosArr, periodos) {
@@ -251,10 +249,29 @@ class Indicadores {
       contextoGeneral: { r2, r1, pp, s1, s2 },
     };
   }
-  calculateSMA_RSI(rsi, periodos) {
-    const valoresParaSMA = rsi.slice(-periodos);
+  calculateSMA_RSI(rsiArr, periodos) {
+    const valoresParaSMA = rsiArr.slice(-periodos);
     const sma = valoresParaSMA.reduce((a, b) => a + b, 0) / periodos;
     return sma;
+  }
+  calculateEMA_RSI(rsiValues, period) {
+    if (rsiValues.length < period) {
+      throw new Error(
+        "Se necesitan al menos tantos valores de RSI como el período."
+      );
+    }
+
+    const multiplier = 2 / (period + 1);
+
+    // Calcular EMA inicial (SMA de los primeros `period` valores)
+    let ema = rsiValues.slice(0, period).reduce((a, b) => a + b, 0) / period;
+
+    // Iterar sobre los valores restantes para calcular la EMA
+    for (let i = period; i < rsiValues.length; i++) {
+      ema = (rsiValues[i] - ema) * multiplier + ema;
+    }
+
+    return ema;
   }
   calculateHasVolumen(ultimasVelas) {
     const ultimasVelasArr = ultimasVelas.map((vela) => parseFloat(vela.volume));
