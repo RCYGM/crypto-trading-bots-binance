@@ -11,7 +11,8 @@ class Indicadores {
 
     // Promedio de los primeros 'N' periodos
     const sum = preciosArr.slice(0, periodos).reduce((a, b) => a + b, 0);
-    return sum / periodos;
+    const resultado = sum / periodos;
+    return resultado;
   }
 
   // Método para calcular la EMA
@@ -61,6 +62,7 @@ class Indicadores {
       // console.log("soy emaArr >>>>>>>>>>>>>", ema);
     }
 
+    ema = ema.map((numero) => parseFloat(numero.toFixed(0)));
     // Devolver el último valor o el array completo
     return ema;
   }
@@ -111,7 +113,7 @@ class Indicadores {
       avgPerdidas = (avgPerdidas * (periodos - 1) + perdidas[i]) / periodos;
 
       const rs = avgGanancias / avgPerdidas;
-      const rsiActual = 100 - 100 / (1 + rs);
+      const rsiActual = parseFloat((100 - 100 / (1 + rs)).toFixed(0));
       rsi.push(rsiActual);
     }
 
@@ -182,6 +184,20 @@ class Indicadores {
         };
       }
 
+      if (precioActual >= r2) {
+        soporteResistenciaActual = {
+          resistenciaActual: false,
+          soporteActual: r2,
+        };
+      }
+
+      if (precioActual <= s2) {
+        soporteResistenciaActual = {
+          resistenciaActual: s1,
+          soporteActual: false,
+        };
+      }
+
       return soporteResistenciaActual;
     };
 
@@ -249,11 +265,14 @@ class Indicadores {
       contextoGeneral: { r2, r1, pp, s1, s2 },
     };
   }
+
   calculateSMA_RSI(rsiArr, periodos) {
     const valoresParaSMA = rsiArr.slice(-periodos);
-    const sma = valoresParaSMA.reduce((a, b) => a + b, 0) / periodos;
-    return sma;
+    const suma = valoresParaSMA.reduce((a, b) => a + b, 0);
+    const sma = (suma / periodos).toFixed(2);
+    return parseFloat(sma);
   }
+
   calculateEMA_RSI(rsiValues, period) {
     if (rsiValues.length < period) {
       throw new Error(
@@ -271,8 +290,9 @@ class Indicadores {
       ema = (rsiValues[i] - ema) * multiplier + ema;
     }
 
-    return ema;
+    return parseFloat(ema.toFixed(0));
   }
+
   calculateHasVolumen(ultimasVelas) {
     const ultimasVelasArr = ultimasVelas.map((vela) => parseFloat(vela.volume));
 

@@ -50,20 +50,23 @@ const Indicadores = require("./indicadores");
 const indicadores = new Indicadores();
 
 class Estrategias {
-  constructor(data15m, data4h, price, comprasArr, ultimosIndicadores) {
+  constructor(data15m, data1h, data4h, price, comprasArr, ultimosIndicadores) {
     // console.log("data15m en el constructor", data15m[0].indicadores);
 
     //Data General
     this.data15m = data15m;
+    this.data1h = data1h;
     this.data4h = data4h;
     this.price = price;
     this.comprasArr = comprasArr;
 
     //Velas en el presente
     this.velas15m = this.data15m[0].candLesticks;
+    this.velas1h = this.data1h[0].candLesticks;
 
     // Indicadores
     this.indicadores15m = this.data15m[0].indicadores;
+    this.indicadores1h = this.data1h[0].indicadores;
     this.indicadores4h = this.data4h[0].indicadores;
     const {
       EMA10_15m,
@@ -84,6 +87,26 @@ class Estrategias {
     this.EMA_RSI8_15m = EMA_RSI8_15m; // Number
     this.EMA_RSI26_15m = EMA_RSI26_15m; // Number
     this.ultimasVelasData_15m = ultimasVelasData_15m; // Arr => Obj
+
+    const {
+      EMA10_1h,
+      EMA20_1h,
+      EMA50_1h,
+      RSI14_1h,
+      SR_1h,
+      EMA_RSI8_1h,
+      EMA_RSI26_1h,
+      ultimasVelasData_1h,
+    } = this.indicadores1h;
+
+    this.EMA10_1h = EMA10_1h; // Arr
+    this.EMA20_1h = EMA20_1h; // Arr
+    this.EMA50_1h = EMA50_1h; // Arr
+    this.RSI14_1h = RSI14_1h; // Arr
+    this.SR_1h = SR_1h; // Obj
+    this.EMA_RSI8_1h = EMA_RSI8_1h; // Number
+    this.EMA_RSI26_1h = EMA_RSI26_1h; // Number
+    this.ultimasVelasData_1h = ultimasVelasData_1h; // Arr => Obj
 
     const {
       EMA10_4h,
@@ -116,26 +139,29 @@ class Estrategias {
     this.hasCruceAlcista = (idNameFuncion) => {
       if (this.ultimosIndicadores.velas15m.length >= 5) {
         switch (idNameFuncion) {
-          case "ema8_ema26_rsi15m":
-            const rsi4toEma8 =
+          case "ema8_ema26_rsi15m": {
+            const rsi5taEma8 =
               this.ultimosIndicadores.velas15m.slice(-4)[0].EMA_RSI8_15m;
-            // console.log("rsi4toEma8", rsi4toEma8);
-
             const rsiUltEma8 =
               this.ultimosIndicadores.velas15m.slice(-1)[0].EMA_RSI8_15m;
-            // console.log("rsiUltEma8", rsiUltEma8);
-
-            /*const rsiPenultimaEma26 =
-              this.ultimosIndicadores.velas15m.slice(-2)[0].EMA_RSI26_15m;*/
-
             const rsiUltEma26 =
               this.ultimosIndicadores.velas15m.slice(-1)[0].EMA_RSI26_15m;
-            // console.log("rsiUltEma26", rsiUltEma26);
 
-            return rsiUltEma8 > rsiUltEma26 && rsi4toEma8 < rsiUltEma26;
+            return rsiUltEma8 > rsiUltEma26 && rsi5taEma8 < rsiUltEma26;
+          }
+          case "ema8_ema26_rsi1h": {
+            const rsi5taEma8 =
+              this.ultimosIndicadores.velas1h.slice(-4)[0].EMA_RSI8_1h;
+            const rsiUltEma8 =
+              this.ultimosIndicadores.velas1h.slice(-1)[0].EMA_RSI8_1h;
+            const rsiUltEma26 =
+              this.ultimosIndicadores.velas1h.slice(-1)[0].EMA_RSI26_1h;
+
+            return rsiUltEma8 > rsiUltEma26 && rsi5taEma8 < rsiUltEma26;
+          }
           default:
             console.error(`Id de función desconocido: ${idNameFuncion}`);
-            return false; // O el valor por defecto que desees.
+            return false;
         }
       } else {
         return false;
@@ -146,9 +172,9 @@ class Estrategias {
       if (this.ultimosIndicadores.velas15m.length >= 5) {
         switch (idNameFuncion) {
           case "ema8_ema26_rsi15m":
-            const rsi4toEma8 =
-              this.ultimosIndicadores.velas15m.slice(-4)[0].EMA_RSI8_15m;
-            // console.log("rsi4toEma8", rsi4toEma8);
+            const rsi5taEma8 =
+              this.ultimosIndicadores.velas15m.slice(-2)[0].EMA_RSI8_15m;
+            // console.log("rsi5taEma8", rsi5taEma8);
 
             const rsiUltEma8 =
               this.ultimosIndicadores.velas15m.slice(-1)[0].EMA_RSI8_15m;
@@ -161,7 +187,7 @@ class Estrategias {
               this.ultimosIndicadores.velas15m.slice(-1)[0].EMA_RSI26_15m;
             // console.log("rsiUltEma26", rsiUltEma26);
 
-            return rsiUltEma8 < rsiUltEma26 && rsi4toEma8 > rsiUltEma26;
+            return rsiUltEma8 < rsiUltEma26 && rsi5taEma8 > rsiUltEma26;
           default:
             console.error(`Id de función desconocido: ${idNameFuncion}`);
             return false; // O el valor por defecto que desees.
@@ -199,10 +225,20 @@ class Estrategias {
         this.velas15m.slice(-1)[0]
       );*/
       switch (interval) {
-        case "15m":
+        case "15m": {
           //console.log("Ultima vela 15m: ", this.velas15m.slice(-1)[0]);
 
           return this.velas15m.slice(-1)[0];
+        }
+        case "1h": {
+          return this.velas1h.slice(-1)[0];
+        }
+        default: {
+          console.error(
+            `No se pudo obtener la última vela porque no encontre ${interval}.`
+          );
+          return false; // O maneja el error según tu lógica
+        }
       }
     };
 
@@ -213,7 +249,7 @@ class Estrategias {
     this.compra = async (idNameFuncion) => {
       try {
         switch (idNameFuncion) {
-          case "ema8_ema26_rsi15m":
+          case "ema8_ema26_rsi15m": {
             const calcularDatosCompra = async () => {
               const ultimaVela = this.ultimaVela("15m");
 
@@ -326,6 +362,121 @@ class Estrategias {
               // console.log("DATA DE RETORNO DE LA COMPRA: ", data);
               return data;
             }
+          }
+          case "ema8_ema26_rsi1h": {
+            const calcularDatosCompra = async () => {
+              const ultimaVela = this.ultimaVela("15m");
+
+              const inversionUsdt = 20; //await balances.balance("USDT");
+              const perdidaMaxima = inversionUsdt * 0.02;
+              const stopLoss = parseFloat(ultimaVela.low);
+              const compra = inversionUsdt / this.price;
+              return {
+                perdidaMaxima,
+                stopLoss,
+                btc: compra,
+                usdt: compra * this.price,
+                compra,
+              };
+            };
+            const { perdidaMaxima, stopLoss, btc, usdt, compra } =
+              await calcularDatosCompra();
+
+            /*try {
+                      const orden = await client.order({
+                        symbol: "BTCUSDT",
+                        side: "BUY",
+                        type: "MARKET",
+                        quantity: compra,
+                      });
+                    } catch (error) {
+                      console.log("Error al realizar la compra", error.message);
+                    }*/
+
+            /* console.log(
+              "VIENDO LOS DATOS DE LA COMPRA: ",
+              "PERDIDA MAXIMA",
+              perdidaMaxima,
+              "stopLoss",
+              stopLoss,
+              "btc",
+              btc,
+              "compra",
+              compra,
+              "usdt",
+              usdt
+            );*/
+            const orden = {
+              symbol: "BTCUSDT",
+              orderId: 123456789,
+              orderListId: -1,
+              clientOrderId: "abc123",
+              transactTime: 1732761123456,
+              price: "0.00000000",
+              origQty: "0.001",
+              executedQty: "0.001",
+              cummulativeQuoteQty: "50.0",
+              status: "FILLED",
+              timeInForce: "GTC",
+              type: "MARKET",
+              side: "BUY",
+              fills: [
+                {
+                  qty: "0.001",
+                  commission: "0.00000005",
+                  commissionAsset: "BTC",
+                  tradeId: 987654321,
+                },
+              ],
+            };
+
+            if (orden) {
+              const data = {
+                informacion: {
+                  id: idNameFuncion,
+                  status: "curso",
+                },
+                metricas: {
+                  fecha: new Date(),
+                  fechaVela: this.ultimaVela("15m").closeTime,
+                  fechaVelaBerlin: convertToBerlinTime(
+                    this.ultimaVela("15m").closeTime
+                  ),
+                  precioCompra: this.price,
+                  totalBtc: compra,
+                  totalUsdt: usdt,
+                  compraHasCruceAlcista: this.hasCruceAlcista(idNameFuncion),
+                  compraUltimaVela: this.ultimaVela("15m"),
+                  compraEMA20_15m: this.EMA20_15m.at(-1),
+                  compraEMA_RSI8_15m: this.EMA_RSI8_15m,
+                  compraEMA_RSI26_15m: this.EMA_RSI26_15m,
+                  compraRSI14_15m: this.RSI14_15m.at(-1),
+                  compraIs_RSI_Alcista: this.is_RSI_Alcista("15m"),
+                },
+                informacionMercado: {
+                  stopLoss: stopLoss,
+                  perdidaMaxima: perdidaMaxima,
+                  resistenciaZona1:
+                    SR_4h.soporteActual + SR_4h.valorZonas.valorZona1,
+                  resistenciaZona2:
+                    SR_4h.soporteActual + SR_4h.valorZonas.valorZona2,
+                  resistenciaZona3:
+                    SR_4h.soporteActual + SR_4h.valorZonas.valorZona3,
+                  resistenciaZona4:
+                    SR_4h.soporteActual + SR_4h.valorZonas.valorZona4,
+                  SR_4h: SR_4h,
+                },
+                candLesticksCompra: {
+                  velaCompra: this.ultimaVela("15m"),
+                  data15m: this.data15m,
+                  data4h: this.data4h,
+                },
+                binanceOrdenData: orden,
+              };
+              // console.log("DATA DE RETORNO DE LA COMPRA: ", data);
+              return data;
+            }
+          }
           default:
             console.error(`Id de función desconocido: ${idNameFuncion}`);
             return false;
@@ -455,14 +606,67 @@ class Estrategias {
   }
 
   ema8_ema26_rsi = async (interval, buySell) => {
+    const {
+      resistenciaActual,
+      soporteActual,
+      isZona1,
+      isZona2,
+      isZona3,
+      isZona4,
+      contextoGeneral,
+    } = this.SR_4h;
+    const {
+      r2: r2_4h,
+      r1: r1_4h,
+      pp: pp_4h,
+      s1: s1_4h,
+      s2: s2_4h,
+    } = contextoGeneral;
+
+    /* console.log(
+        "Prueba de datos: ",
+        "resistenciaActual",
+        resistenciaActual,
+        "soporteActual",
+        soporteActual,
+        isZona1,
+        isZona2,
+        isZona3,
+        isZona4,
+        r2_4h,
+        r1_4h,
+        pp_4h,
+        s1_4h,
+        s2_4h
+      );*/
+
     try {
       const idNameFuncion = `ema8_ema26_rsi${interval}`;
       if (buySell === "buy") {
-        const ultimaVela = this.ultimaVela(interval);
+        if (!isZona4) {
+          const ultimaVela = this.ultimaVela(interval);
+          const rsiActual = this.RSI14_15m.at(-1);
 
-        if (this.hasCruceAlcista(idNameFuncion)) {
-          //console.log("IF #1 superado");
-          /*if (this.hasCruceAlcista(idNameFuncion)) {
+          if (this.hasCruceAlcista(idNameFuncion)) {
+            if (
+              this.is_RSI_Alcista(interval) &&
+              rsiActual > 50 &&
+              rsiActual <= 65
+            ) {
+              if (
+                this.isUltimaVelaVerde(ultimaVela) &&
+                parseFloat(ultimaVela.close) > this.EMA20_15m.at(-1)
+              ) {
+                const data = await this.compra(idNameFuncion);
+                if (data) {
+                  return data;
+                }
+              }
+            }
+          }
+        }
+        //console.log("IF #1 superado");
+        /*if (this.hasCruceAlcista(idNameFuncion)) {
             console.log(
               `this.hasCruceAlcista("ema8-ema26-rsi")`,
               this.hasCruceAlcista(idNameFuncion)
@@ -473,18 +677,12 @@ class Estrategias {
               this.is_RSI_Alcista(interval)
             );
           }*/
-          if (this.RSI14_15m.at(-1) > 50 && this.is_RSI_Alcista(interval)) {
-            if (this.RSI14_15m.at(-1) > 50 && this.is_RSI_Alcista(interval))
-              if (
-                this.isUltimaVelaVerde(ultimaVela) &&
-                parseFloat(ultimaVela.close) > this.EMA20_15m.at(-1)
-              ) {
-                /*  console.log(
+        /*  console.log(
                 "IF #2 superado",
                 this.RSI14_15m.at(-1) > 50 && this.is_RSI_Alcista(interval)
               );*/
 
-                /*console.log("Ultima Vela: ", ultimaVela);
+        /*console.log("Ultima Vela: ", ultimaVela);
             console.log("this.EMA20_15m.at(-1): ", this.EMA20_15m.at(-1));
 
             console.log(
@@ -495,20 +693,12 @@ class Estrategias {
               "Cerro por encima de la ema",
               parseFloat(ultimaVela.close) > this.EMA20_15m.at(-1)
             );*/
-
-                const data = await this.compra(idNameFuncion);
-                if (data) {
-                  /* console.log(
+        /* console.log(
                   "Fecha: ",
                   convertToBerlinTime(this.ultimaVela("15m").closeTime)
                 );*/
 
-                  // console.log("Datos de Compra", data);
-                  return data;
-                }
-              }
-          }
-        }
+        // console.log("Datos de Compra", data);
       } else if (buySell === "sell") {
         const myOperacion = this.comprasArr.find(
           (operacion) => operacion.informacion.id === idNameFuncion
@@ -522,7 +712,12 @@ class Estrategias {
             return data;
           }
         }
-
+        if (this.price >= r2_4h) {
+          const data = await this.vende(idNameFuncion);
+          if (data) {
+            return data;
+          }
+        }
         const ultimaVela = this.ultimaVela(interval);
         if (this.EMA_RSI8_15m < this.EMA_RSI26_15m) {
           /*  console.log("IF VENTA #1 ", this.EMA_RSI8_15m < this.EMA_RSI26_15m);
@@ -551,6 +746,172 @@ class Estrategias {
             if (
               !this.isUltimaVelaVerde(ultimaVela) &&
               parseFloat(ultimaVela.close) < this.EMA20_15m.at(-1)
+            ) {
+              const data = await this.vende(idNameFuncion);
+              if (data) {
+                return data;
+              }
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.log("Error estrategia EMA_RSI 15m: ", error.message);
+    }
+  };
+  //Prueba 1h
+  ema8_ema26_rsi1h = async (interval, buySell) => {
+    const {
+      resistenciaActual,
+      soporteActual,
+      isZona1,
+      isZona2,
+      isZona3,
+      isZona4,
+      contextoGeneral,
+    } = this.SR_4h;
+    const {
+      r2: r2_4h,
+      r1: r1_4h,
+      pp: pp_4h,
+      s1: s1_4h,
+      s2: s2_4h,
+    } = contextoGeneral;
+
+    /* console.log(
+        "Prueba de datos: ",
+        "resistenciaActual",
+        resistenciaActual,
+        "soporteActual",
+        soporteActual,
+        isZona1,
+        isZona2,
+        isZona3,
+        isZona4,
+        r2_4h,
+        r1_4h,
+        pp_4h,
+        s1_4h,
+        s2_4h
+      );*/
+
+    try {
+      /* if (!this.RSI14_1h || this.RSI14_1h.length === 0) {
+        throw new Error("RSI14_1h no está definido o está vacío.");
+      }
+
+      if (!this.EMA20_1h || this.EMA20_1h.length === 0) {
+        throw new Error("EMA20_1h no está definido o está vacío.");
+      }*/
+      // console.log("RSI14_1h: ", this.RSI14_1h);
+      // console.log("EMA20_1h: ", this.EMA20_1h);
+
+      const idNameFuncion = `ema8_ema26_rsi${interval}`;
+      const rsiActual = this.RSI14_1h.at(-1);
+
+      if (buySell === "buy") {
+        if (!isZona4) {
+          const ultimaVela = this.ultimaVela(interval);
+
+          if (this.hasCruceAlcista(idNameFuncion)) {
+            if (
+              this.is_RSI_Alcista(interval) &&
+              rsiActual > 50 &&
+              rsiActual <= 65
+            ) {
+              if (
+                this.isUltimaVelaVerde(ultimaVela) &&
+                parseFloat(ultimaVela.close) > this.EMA20_1h.at(-1)
+              ) {
+                const data = await this.compra(idNameFuncion);
+                if (data) {
+                  return data;
+                }
+              }
+            }
+          }
+        }
+        //console.log("IF #1 superado");
+        /*if (this.hasCruceAlcista(idNameFuncion)) {
+            console.log(
+              `this.hasCruceAlcista("ema8-ema26-rsi")`,
+              this.hasCruceAlcista(idNameFuncion)
+            );
+            console.log(`this.RSI14_15m.at(-1)`, this.RSI14_15m.at(-1));
+            console.log(
+              `this.is_RSI_Alcista(interval)`,
+              this.is_RSI_Alcista(interval)
+            );
+          }*/
+        /*  console.log(
+                "IF #2 superado",
+                this.RSI14_15m.at(-1) > 50 && this.is_RSI_Alcista(interval)
+              );*/
+
+        /*console.log("Ultima Vela: ", ultimaVela);
+            console.log("this.EMA20_15m.at(-1): ", this.EMA20_15m.at(-1));
+
+            console.log(
+              "this.isUltimaVelaVerde(ultimaVela)",
+              this.isUltimaVelaVerde(ultimaVela)
+            );
+            console.log(
+              "Cerro por encima de la ema",
+              parseFloat(ultimaVela.close) > this.EMA20_15m.at(-1)
+            );*/
+        /* console.log(
+                  "Fecha: ",
+                  convertToBerlinTime(this.ultimaVela("15m").closeTime)
+                );*/
+
+        // console.log("Datos de Compra", data);
+      } else if (buySell === "sell") {
+        const myOperacion = this.comprasArr.find(
+          (operacion) => operacion.informacion.id === idNameFuncion
+        );
+        const { stopLoss, perdidaMaxima } = myOperacion.informacionMercado;
+
+        if (this.price < stopLoss) {
+          this.isStopLoss = true;
+          const data = await this.vende(idNameFuncion);
+          if (data) {
+            return data;
+          }
+        }
+        if (this.price >= r2_4h) {
+          const data = await this.vende(idNameFuncion);
+          if (data) {
+            return data;
+          }
+        }
+        const ultimaVela = this.ultimaVela(interval);
+        if (this.EMA_RSI8_1h < this.EMA_RSI26_1h) {
+          /*  console.log("IF VENTA #1 ", this.EMA_RSI8_15m < this.EMA_RSI26_15m);
+          console.log("EMA_RSI8_15m ", this.EMA_RSI8_15m);
+          console.log("EMA_RSI26_15m", this.EMA_RSI26_15m);
+          console.log(
+            "this.RSI14_15m <= 55",
+            this.RSI14_15m.at(-1),
+            this.RSI14_15m.at(-1) <= 55
+          );
+          console.log("es bajista?", !this.is_RSI_Alcista(interval));*/
+
+          /** En este caso buscar que !this.is_RSI_Alcista sea false es valido porque
+           * la funcion solo toma en cuenta los dos ultimos valores ya que el rsi es muy volatil
+           * por lo tanto si no es alcista significa que es bajista */
+
+          if (rsiActual < 50 && !this.is_RSI_Alcista(interval)) {
+            // console.log("Ultima Vela: ", ultimaVela);
+            // console.log("this.EMA20_15m", this.EMA20_15m.at(-1));
+
+            /* console.log(
+              "La vela es Verde? => tiene que ser false",
+              !this.isUltimaVelaVerde(ultimaVela)
+            );*/
+
+            if (
+              !this.isUltimaVelaVerde(ultimaVela) &&
+              parseFloat(ultimaVela.close) < this.EMA20_1h.at(-1)
             ) {
               const data = await this.vende(idNameFuncion);
               if (data) {
@@ -644,6 +1005,14 @@ const backtesting = async (fechaStartBacktesting, fechaEndBacktesting) => {
   );
   console.log("Total de velas banckData15m: ", banckData15m.length);
 
+  const banckData1h = await getVelasData(
+    symbol,
+    "1h",
+    startBacktesting,
+    endBacktesting
+  );
+  console.log("Total de velas banckData1h: ", banckData1h.length);
+
   const banckData4h = await getVelasData(
     symbol,
     "4h",
@@ -654,7 +1023,7 @@ const backtesting = async (fechaStartBacktesting, fechaEndBacktesting) => {
 
   let actualizarArrData = 960;
 
-  let data15mArr = banckData15m.slice(0, actualizarArrData); //obtengo las primeras 96 velas
+  let data15mArr = banckData15m.slice(0, actualizarArrData); //obtengo las primeras 960 velas
   /* console.log(
     "ULTIMA VELA 96: ",
     data15mArr.slice(-1)[0],
@@ -665,6 +1034,49 @@ const backtesting = async (fechaStartBacktesting, fechaEndBacktesting) => {
     data15mArr.length
   );*/
 
+  const buscarVela1h = (ultimosDatos15m) => {
+    const horaCierre1h = ultimosDatos15m.slice(-1)[0].closeTime;
+    // console.log("horaCierre1h", horaCierre1h);
+
+    const vela1h = banckData1h.find(
+      (vela) => vela.openTime <= horaCierre1h && vela.closeTime >= horaCierre1h
+    );
+    // console.log("vela1h", vela1h);
+    if (!vela1h) {
+      console.error(
+        "Error: No se encontró una vela de 4 horas que coincida con la hora de cierre de la vela de 15 minutos."
+      );
+      throw new Error("Error al buscar la vela de 4 horas.");
+    }
+
+    const indiceVela = banckData1h.findIndex(
+      (vela) => vela.close === vela1h.close
+    );
+
+    // console.log("indiceVela", indiceVela);
+
+    if (indiceVela === -1) {
+      console.error(
+        "Error: No se encontró el índice de la vela de 4 horas correspondiente."
+      );
+      throw new Error("Error al buscar el índice de la vela de 4 horas.");
+    }
+
+    return indiceVela;
+  };
+
+  let data1hArr = banckData1h.slice(0, buscarVela1h(data15mArr) + 1);
+  // console.log("data1hArr", data1hArr);
+
+  /* console.log(
+    "ULTIMA VELA 1h: ",
+    data1hArr.slice(-1)[0],
+    "HORA DE CIERRE = ",
+    data1hArr.slice(-1)[0].closeTime,
+    new Date(data1hArr.slice(-1)[0].closeTime),
+    "Tengo esta cantidad de velas: ",
+    data1hArr.length
+  );*/
   const buscarVela4h = (ultimosDatos15m) => {
     const horaCierre15m = ultimosDatos15m.slice(-1)[0].closeTime;
     const vela4h = banckData4h.find(
@@ -716,6 +1128,7 @@ const backtesting = async (fechaStartBacktesting, fechaEndBacktesting) => {
       const priceCloseArr_15m = data15mArr.map((item) =>
         parseFloat(item.close)
       );
+      const priceCloseArr_1h = data1hArr.map((item) => parseFloat(item.close));
       const priceCloseArr_4h = data4hArr.map((item) => parseFloat(item.close));
 
       const obtenerIndicadores = (velas, interval, price, priceCloseArr) => {
@@ -761,6 +1174,13 @@ const backtesting = async (fechaStartBacktesting, fechaEndBacktesting) => {
         priceActual,
         priceCloseArr_15m
       );
+
+      const myData1h = obtenerIndicadores(
+        data15mArr,
+        "1h",
+        priceActual,
+        priceCloseArr_1h
+      );
       const myData4h = obtenerIndicadores(
         data4hArr,
         "4h",
@@ -769,11 +1189,16 @@ const backtesting = async (fechaStartBacktesting, fechaEndBacktesting) => {
       );
 
       myData.ultimosIndicadores.velas15m.push(myData15[0].indicadores);
+      myData.ultimosIndicadores.velas1h.push(myData1h[0].indicadores);
       myData.ultimosIndicadores.velas4h.push(myData4h[0].indicadores);
 
       if (myData.ultimosIndicadores.velas15m.length > 5) {
         myData.ultimosIndicadores.velas15m =
           myData.ultimosIndicadores.velas15m.slice(-5);
+      }
+      if (myData.ultimosIndicadores.velas1h.length > 5) {
+        myData.ultimosIndicadores.velas1h =
+          myData.ultimosIndicadores.velas1h.slice(-5);
       }
       if (myData.ultimosIndicadores.velas4h.length > 5) {
         myData.ultimosIndicadores.velas4h =
@@ -784,6 +1209,7 @@ const backtesting = async (fechaStartBacktesting, fechaEndBacktesting) => {
 
       const estrategias = new Estrategias(
         myData15,
+        myData1h,
         myData4h,
         priceActual,
         myData.compras,
@@ -798,7 +1224,7 @@ const backtesting = async (fechaStartBacktesting, fechaEndBacktesting) => {
 
         //  console.log("Voy a buscar una compra");
         //  console.log("Estrategias instance:", estrategias);
-        const buy = await estrategias.ema8_ema26_rsi("15m", "buy");
+        const buy = await estrategias.ema8_ema26_rsi1h("1h", "buy");
 
         if (buy) {
           //  console.log("HE COMPRADO");
@@ -817,10 +1243,10 @@ const backtesting = async (fechaStartBacktesting, fechaEndBacktesting) => {
 
         for (let i = 0; i < myData.compras.length; i++) {
           //    console.log("ESTOY DENTRO DE FOR DE LA LISTA DE COMPRAS");
-          if (myData.compras[i].informacion.id === "ema8_ema26_rsi15m") {
+          if (myData.compras[i].informacion.id === "ema8_ema26_rsi1h") {
             //    console.log("ENCONTRE UN ID LLAMADO EMA-RSI-15M");
 
-            const sell = await estrategias.ema8_ema26_rsi("15m", "sell");
+            const sell = await estrategias.ema8_ema26_rsi1h("1h", "sell");
 
             if (sell) {
               // console.log("sell FUE EXITOSA: ", sell);
@@ -862,6 +1288,13 @@ const backtesting = async (fechaStartBacktesting, fechaEndBacktesting) => {
           "Esta es mi longitud en data15mArr despues de la actualizacion: ",
           data15mArr.length
         );*/
+
+      if (llamadasVelas15m === 4) {
+        data1hArr = banckData1h.slice(
+          Math.max(0, buscarVela1h(data15mArr) - 239),
+          buscarVela1h(data15mArr) + 1
+        );
+      }
 
       if (llamadasVelas15m === 16) {
         // console.log("LLAMARE UNA VELA DE 4H");
@@ -915,33 +1348,55 @@ const backtesting = async (fechaStartBacktesting, fechaEndBacktesting) => {
   ).length;
 
   // Ganancia total y pérdida total
-  const gananciaTotal = historial
-    .filter((operacion) => operacion.resultado.isGanancia === true)
-    .map((operacion) => operacion.resultado.usdt - 20)
-    .reduce((a, b) => a + b, 0);
-
-  const perdidaTotal = Math.abs(
+  const gananciaTotal = parseFloat(
     historial
-      .filter((operacion) => operacion.resultado.isGanancia === false)
+      .filter((operacion) => operacion.resultado.isGanancia === true)
       .map((operacion) => operacion.resultado.usdt - 20)
       .reduce((a, b) => a + b, 0)
+      .toFixed(2)
+  );
+
+  const perdidaTotal = parseFloat(
+    Math.abs(
+      historial
+        .filter((operacion) => operacion.resultado.isGanancia === false)
+        .map((operacion) => operacion.resultado.usdt - 20)
+        .reduce((a, b) => a + b, 0)
+    ).toFixed(2)
   );
 
   // Promedios de ganancia y pérdida
-  const gananciaPromedio = gananciaTotal / totalGanadoras || 0; // Prevenir divisiones por 0
-  const perdidaPromedio = perdidaTotal / totalPerdedoras || 0; // Prevenir divisiones por 0
+  const gananciaPromedio = parseFloat(
+    (gananciaTotal / totalGanadoras || 0).toFixed(2)
+  );
+  const perdidaPromedio = parseFloat(
+    (perdidaTotal / totalPerdedoras || 0).toFixed(2)
+  );
 
   // Fórmulas de rendimiento
-  const winRate = (totalGanadoras / historial.length) * 100 || 0;
-  const winLossRatio = totalGanadoras / totalPerdedoras || 0;
-  const profitFactor = gananciaTotal / perdidaTotal || 0;
+  const winRate = parseFloat(
+    ((totalGanadoras / historial.length) * 100 || 0).toFixed(2)
+  );
+  const winLossRatio = parseFloat(
+    (totalGanadoras / totalPerdedoras || 0).toFixed(2)
+  );
+  const profitFactor = parseFloat(
+    (gananciaTotal / perdidaTotal || 0).toFixed(2)
+  );
 
   // Expected Value (EV)
-  const probabilidadGanar = totalGanadoras / historial.length || 0;
-  const probabilidadPerder = totalPerdedoras / historial.length || 0;
-  const expectedValue =
-    probabilidadGanar * gananciaPromedio -
-      probabilidadPerder * perdidaPromedio || 0;
+  const probabilidadGanar = parseFloat(
+    (totalGanadoras / historial.length || 0).toFixed(2)
+  );
+  const probabilidadPerder = parseFloat(
+    (totalPerdedoras / historial.length || 0).toFixed(2)
+  );
+  const expectedValue = parseFloat(
+    (
+      probabilidadGanar * gananciaPromedio -
+        probabilidadPerder * perdidaPromedio || 0
+    ).toFixed(2)
+  );
 
   // Drawdown (máxima caída)
   let maxDrawdown = 0;
@@ -957,6 +1412,7 @@ const backtesting = async (fechaStartBacktesting, fechaEndBacktesting) => {
     maxDrawdown = Math.max(maxDrawdown, drawdown);
     return nuevoEquity;
   }, 0);
+  maxDrawdown = parseFloat(maxDrawdown.toFixed(2));
 
   // Datos de resumen
   const data = {
@@ -981,14 +1437,14 @@ const backtesting = async (fechaStartBacktesting, fechaEndBacktesting) => {
       },
     },
     resultadoHistorial: historial.map((operacion) => operacion.resultado),
-    // historial: historial,
   };
+
   return data;
 };
 
 (async () => {
   const resultado = await backtesting(
-    new Date("2024-11-01T00:00:00.000Z").getTime(),
+    new Date("2024-08-01T00:00:00.000Z").getTime(),
     new Date().getTime()
   );
   console.log(resultado);
