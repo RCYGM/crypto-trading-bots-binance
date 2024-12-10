@@ -62,7 +62,7 @@ class Indicadores {
       // console.log("soy emaArr >>>>>>>>>>>>>", ema);
     }
 
-    ema = ema.map((numero) => parseFloat(numero.toFixed(0)));
+    ema = ema.map((numero) => parseFloat(numero.toFixed(2)));
     // Devolver el último valor o el array completo
     return ema;
   }
@@ -113,7 +113,7 @@ class Indicadores {
       avgPerdidas = (avgPerdidas * (periodos - 1) + perdidas[i]) / periodos;
 
       const rs = avgGanancias / avgPerdidas;
-      const rsiActual = parseFloat((100 - 100 / (1 + rs)).toFixed(0));
+      const rsiActual = parseFloat((100 - 100 / (1 + rs)).toFixed(2));
       rsi.push(rsiActual);
     }
 
@@ -203,48 +203,42 @@ class Indicadores {
 
     const BuscarZonas = () => {
       let zonas = {};
-      let valorZona1 = 0;
-      let valorZona2 = 0;
-      let valorZona3 = 0;
-      let valorZona4 = 0;
+      let resistenciaZona1 = 0;
+      let resistenciaZona2 = 0;
+      let resistenciaZona3 = 0;
+      let resistenciaZona4 = 0;
       const { resistenciaActual, soporteActual } =
         buscarSoporteResistenciaActual();
 
       const distanciaTotal = resistenciaActual - soporteActual;
       const valorCadaZona = distanciaTotal / 4;
 
-      valorZona1 = valorCadaZona;
-      valorZona2 = valorCadaZona * 2;
-      valorZona3 = valorCadaZona * 3;
-      valorZona4 = valorCadaZona * 4;
+      resistenciaZona1 = valorCadaZona + soporteActual;
+      resistenciaZona2 = valorCadaZona * 2 + soporteActual;
+      resistenciaZona3 = valorCadaZona * 3 + soporteActual;
+      resistenciaZona4 = valorCadaZona * 4 + soporteActual;
 
       const isZona1 =
-        precioActual >= soporteActual &&
-        precioActual <= soporteActual + valorZona1;
+        precioActual >= soporteActual && precioActual <= resistenciaZona1;
 
       const isZona2 =
-        precioActual >= soporteActual + valorZona1 &&
-        precioActual <= soporteActual + valorZona2;
+        precioActual >= resistenciaZona1 && precioActual <= resistenciaZona2;
 
       const isZona3 =
-        precioActual >= soporteActual + valorZona2 &&
-        precioActual <= soporteActual + valorZona3;
+        precioActual >= resistenciaZona2 && precioActual <= resistenciaZona3;
 
       const isZona4 =
-        precioActual >= soporteActual + valorZona3 &&
-        precioActual <= soporteActual + valorZona4;
+        precioActual >= resistenciaZona3 && precioActual <= resistenciaZona4;
 
       zonas = {
         isZona1,
         isZona2,
         isZona3,
         isZona4,
-        valorZonas: {
-          valorZona1,
-          valorZona2,
-          valorZona3,
-          valorZona4,
-        },
+        resistenciaZona1,
+        resistenciaZona2,
+        resistenciaZona3,
+        resistenciaZona4,
       };
 
       return zonas;
@@ -252,17 +246,33 @@ class Indicadores {
 
     const { resistenciaActual, soporteActual } =
       buscarSoporteResistenciaActual();
-    const { isZona1, isZona2, isZona3, isZona4, valorZonas } = BuscarZonas();
+    const {
+      isZona1,
+      isZona2,
+      isZona3,
+      isZona4,
+      resistenciaZona1,
+      resistenciaZona2,
+      resistenciaZona3,
+      resistenciaZona4,
+    } = BuscarZonas();
 
     return {
+      r2,
+      r1,
+      pp,
+      s1,
+      s2,
       resistenciaActual,
       soporteActual,
       isZona1,
       isZona2,
       isZona3,
       isZona4,
-      valorZonas,
-      contextoGeneral: { r2, r1, pp, s1, s2 },
+      resistenciaZona1,
+      resistenciaZona2,
+      resistenciaZona3,
+      resistenciaZona4,
     };
   }
 
@@ -290,7 +300,7 @@ class Indicadores {
       ema = (rsiValues[i] - ema) * multiplier + ema;
     }
 
-    return parseFloat(ema.toFixed(0));
+    return parseFloat(ema.toFixed(2));
   }
 
   calculateHasVolumen(ultimasVelas) {
