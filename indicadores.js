@@ -62,7 +62,7 @@ class Indicadores {
       // console.log("soy emaArr >>>>>>>>>>>>>", ema);
     }
 
-    ema = ema.map((numero) => parseFloat(numero.toFixed(2)));
+    ema = ema.map((numero) => parseFloat(numero.toFixed(0)));
     // Devolver el último valor o el array completo
     return ema;
   }
@@ -113,7 +113,7 @@ class Indicadores {
       avgPerdidas = (avgPerdidas * (periodos - 1) + perdidas[i]) / periodos;
 
       const rs = avgGanancias / avgPerdidas;
-      const rsiActual = parseFloat((100 - 100 / (1 + rs)).toFixed(2));
+      const rsiActual = parseFloat((100 - 100 / (1 + rs)).toFixed(0));
       rsi.push(rsiActual);
     }
 
@@ -122,6 +122,8 @@ class Indicadores {
   }
 
   calculateSopRes(preciosArr, precioActual) {
+    // console.log("preciosArr", preciosArr.length);
+
     let r2 = 0;
     let s2 = Infinity; // Inicializa como el valor más alto posible
 
@@ -279,7 +281,7 @@ class Indicadores {
   calculateSMA_RSI(rsiArr, periodos) {
     const valoresParaSMA = rsiArr.slice(-periodos);
     const suma = valoresParaSMA.reduce((a, b) => a + b, 0);
-    const sma = (suma / periodos).toFixed(2);
+    const sma = (suma / periodos).toFixed(0);
     return parseFloat(sma);
   }
 
@@ -300,7 +302,7 @@ class Indicadores {
       ema = (rsiValues[i] - ema) * multiplier + ema;
     }
 
-    return parseFloat(ema.toFixed(2));
+    return parseFloat(ema.toFixed(0));
   }
 
   calculateHasVolumen(ultimasVelas) {

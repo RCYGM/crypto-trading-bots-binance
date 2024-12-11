@@ -203,6 +203,8 @@ class Estrategias {
     this.dineoDisponible = 100;
     this.isStopLoss = false;
     this.ventaResistenciaZona3 = false;
+    this.ventaRsi75 = false;
+    this.resistenciaActualAlcanzada = false;
 
     //Funciones constructoras
     this.hasCruceAlcista = (idNameFuncion) => {
@@ -219,14 +221,33 @@ class Estrategias {
             return rsiUltEma8 > rsiUltEma26 && rsi5taEma8 < rsiUltEma26;
           }
           case "ema8_ema26_rsi1h": {
+            const rsi10maEma8 =
+              this.ultimosIndicadores.velas1h.slice(-10)[0].EMA_RSI8_1h;
             const rsi5taEma8 =
-              this.ultimosIndicadores.velas1h.slice(-4)[0].EMA_RSI8_1h;
+              this.ultimosIndicadores.velas1h.slice(-5)[0].EMA_RSI8_1h;
+            const rsiPenultimaEma8 =
+              this.ultimosIndicadores.velas1h.slice(-5)[0].EMA_RSI8_1h;
             const rsiUltEma8 =
               this.ultimosIndicadores.velas1h.slice(-1)[0].EMA_RSI8_1h;
             const rsiUltEma26 =
               this.ultimosIndicadores.velas1h.slice(-1)[0].EMA_RSI26_1h;
+            /* if (this.ultimaVela("1h").openTime === 1730788200000) {
+              console.log("rsi10maEma8", rsi10maEma8);
+              console.log("rsiUltEma8", rsiUltEma8);
+              console.log("rsiUltEma26", rsiUltEma26);
+              console.log(
+                "rsiUltEma8 > rsiUltEma26 && rsi10maEma8 < rsiUltEma26",
+                rsiUltEma8 > rsiUltEma26 && rsi10maEma8 < rsiUltEma26
+              );
+            }*/
+            const cruceTardido =
+              rsiUltEma8 > rsiUltEma26 && rsi10maEma8 < rsiUltEma26;
+            const crucePrudente =
+              rsiUltEma8 > rsiUltEma26 && rsi5taEma8 < rsiUltEma26;
+            const cruceReciente =
+              rsiUltEma8 > rsiUltEma26 && rsiPenultimaEma8 < rsiUltEma26;
 
-            return rsiUltEma8 > rsiUltEma26 && rsi5taEma8 < rsiUltEma26;
+            return cruceReciente || crucePrudente || cruceTardido;
           }
           default:
             console.error(`Id de función desconocido: ${idNameFuncion}`);
@@ -271,14 +292,22 @@ class Estrategias {
       const emaRsi8Key = `EMA_RSI8_${intervalo}`;
 
       if (this.ultimosIndicadores.velas15m.length >= 5) {
+        const penultimoEmaRsi =
+          this.ultimosIndicadores[velasKey].slice(-10)[0][emaRsi8Key];
         const ultimoEmaRsi =
           this.ultimosIndicadores[velasKey].slice(-1)[0][emaRsi8Key];
-        const penultimoEmaRsi =
-          this.ultimosIndicadores[velasKey].slice(-2)[0][emaRsi8Key];
+
         // console.log(`ultimoRsi${intervalo}`, ultimoRsi);
         // console.log(`penultimoRsi${intervalo}`, penultimoRsi);
         // console.log("penultimoEmaRsi", penultimoEmaRsi);
         // console.log("ultimoEmaRsi", ultimoEmaRsi);
+
+        /* if (this.ultimaVela("1h").openTime === 1730788200000) {
+          console.log("velasKey", velasKey);
+          console.log("emaRsi8Key", emaRsi8Key);
+          console.log("penultimoEmaRsi", penultimoEmaRsi);
+          console.log("ultimoEmaRsi", ultimoEmaRsi);
+        }*/
 
         return ultimoEmaRsi > penultimoEmaRsi;
       } else {
@@ -438,7 +467,7 @@ class Estrategias {
               const inversionUsdt = 20; //await balances.balance("USDT");
               const perdidaMaxima = inversionUsdt * 0.02;
               const stopLoss = parseFloat(
-                (this.price - this.price * 0.015).toFixed(2)
+                (this.price - this.price * 0.01).toFixed(2)
               );
 
               const compra = inversionUsdt / this.price;
@@ -575,19 +604,19 @@ class Estrategias {
               // console.log("DATA DE RETORNO DE LA COMPRA: ", data);
 
               // Log para indicadores de venta en 1h
-              console.log("indicadores:", "INDICADORES COMPRA");
+              /* console.log("indicadores:", "INDICADORES COMPRA");
               console.log(convertToBerlinTime(this.ultimaVela("1h").closeTime));
               console.log("Última Vela 1h:");
-              console.log("ventaUltimaVela:", this.ultimaVela("1h"));
+              console.log("UltimaVela:", this.ultimaVela("1h"));
 
               console.log("EMA y RSI en 1h:");
-              console.log("ventaEMA20_1h:", this.EMA20_1h.at(-1));
-              console.log("ventaEMA_RSI8_1h:", this.EMA_RSI8_1h);
-              console.log("ventaEMA_RSI26_1h:", this.EMA_RSI26_1h);
-              console.log("ventaRSI14_1h:", this.RSI14_1h.at(-1));
+              console.log("EMA20_1h:", this.EMA20_1h.at(-1));
+              console.log("EMA_RSI8_1h:", this.EMA_RSI8_1h);
+              console.log("EMA_RSI26_1h:", this.EMA_RSI26_1h);
+              console.log("RSI14_1h:", this.RSI14_1h.at(-1));
 
               console.log("RSI Alcista en 1h:");
-              console.log("ventais_RSI_Alcista:", this.is_RSI_Alcista("1h"));
+              console.log("is_RSI_Alcista:", this.is_RSI_Alcista("1h"));
               // Log para soportes y resistencias de 1h
               console.log("1H Soportes y Resistencias:");
               console.log(
@@ -643,6 +672,7 @@ class Estrategias {
               console.log("resistenciaZona2_4h:", this.resistenciaZona2_4h);
               console.log("resistenciaZona3_4h:", this.resistenciaZona3_4h);
               console.log("resistenciaZona4_4h:", this.resistenciaZona4_4h);
+              console.log(">");*/
 
               return data;
             }
@@ -840,10 +870,12 @@ class Estrategias {
 
       informacion.status = "finalizado";
       this.isStopLoss = false;
+      this.ventaRsi75 = false;
+      this.resistenciaActualAlcanzada = false;
       this.ventaResistenciaZona3 = false;
 
       // Log para indicadores de venta en 1h
-      console.log("indicadores:", "INDICADORES VENTA");
+      /* console.log("indicadores:", "INDICADORES VENTA");
 
       console.log(convertToBerlinTime(this.ultimaVela("1h").closeTime));
 
@@ -908,6 +940,7 @@ class Estrategias {
       console.log("resistenciaZona2_4h:", this.resistenciaZona2_4h);
       console.log("resistenciaZona3_4h:", this.resistenciaZona3_4h);
       console.log("resistenciaZona4_4h:", this.resistenciaZona4_4h);
+      console.log(">");*/
 
       return data;
     };
@@ -954,13 +987,12 @@ class Estrategias {
       if (buySell === "buy") {
         if (!isZona4) {
           const ultimaVela = this.ultimaVela(interval);
-          const rsiActual = this.RSI14_15m.at(-1);
 
           if (this.hasCruceAlcista(idNameFuncion)) {
             if (
               this.is_RSI_Alcista(interval) &&
-              rsiActual > 50 &&
-              rsiActual <= 65
+              this.EMA_RSI8_1h > 50 &&
+              this.EMA_RSI8_1h <= 65
             ) {
               if (
                 this.isUltimaVelaVerde(ultimaVela) &&
@@ -1117,17 +1149,96 @@ class Estrategias {
       // console.log("EMA20_1h: ", this.EMA20_1h);
 
       const idNameFuncion = `ema8_ema26_rsi${interval}`;
-      const rsiActual = this.RSI14_1h.at(-1);
 
       if (buySell === "buy") {
-        if (!this.isZona3_4h && !this.isZona4_4h) {
+        if (!this.isZona3_4h && !this.isZona4_4h && resistenciaActual) {
+          if (this.ultimaVela("1h").openTime === 1730788200000) {
+            /* console.log("indicadores:", "INDICADORES COMPRA");
+            console.log(convertToBerlinTime(this.ultimaVela("1h").closeTime));
+            console.log("Última Vela 1h:");
+            console.log("UltimaVela:", this.ultimaVela("1h"));
+
+            console.log("precio", this.price);
+
+            console.log("EMA y RSI en 1h:");
+            console.log("EMA20_1h:", this.EMA20_1h.at(-1));
+            console.log("EMA_RSI8_1h:", this.EMA_RSI8_1h);
+            console.log("EMA_RSI26_1h:", this.EMA_RSI26_1h);
+            console.log("RSI14_1h:", this.RSI14_1h.at(-1));
+
+            console.log("RSI Alcista en 1h:");
+            console.log("is_RSI_Alcista:", this.is_RSI_Alcista("1h"));
+            console.log(
+              "hasCruceAlcista:",
+              this.hasCruceAlcista(idNameFuncion)
+            );*/
+            // Log para soportes y resistencias de 1h
+            /*  console.log("1H Soportes y Resistencias:");
+            console.log(
+              "sopRes1h:",
+              "Compra Soportes y resistencias en velas de 1h"
+            );
+            console.log("r2_1h:", this.r2_1h);
+            console.log("r1_1h:", this.r1_1h);
+            console.log("pp_1h:", this.pp_1h);
+            console.log("s1_1h:", this.s1_1h);
+            console.log("s2_1h:", this.s2_1h);
+
+            console.log("Resistencia y Soporte Actual 1H:");
+            console.log("resistenciaActual_1h:", this.resistenciaActual_1h);
+            console.log("soporteActual_1h:", this.soporteActual_1h);
+
+            console.log("Zonas de Soportes y Resistencias 1H:");
+            console.log("isZona1_1h:", this.isZona1_1h);
+            console.log("isZona2_1h:", this.isZona2_1h);
+            console.log("isZona3_1h:", this.isZona3_1h);
+            console.log("isZona4_1h:", this.isZona4_1h);
+
+            console.log("Resistencias por Zonas 1H:");
+            console.log("resistenciaZona1_1h:", this.resistenciaZona1_1h);
+            console.log("resistenciaZona2_1h:", this.resistenciaZona2_1h);
+            console.log("resistenciaZona3_1h:", this.resistenciaZona3_1h);
+            console.log("resistenciaZona4_1h:", this.resistenciaZona4_1h);
+
+            // Log para soportes y resistencias de 4h
+            console.log("4H Soportes y Resistencias:");
+            console.log(
+              "sopRes4h:",
+              "cOMPRA Soportes y resistencias en velas de 4h"
+            );
+            console.log("r2_4h:", this.r2_4h);
+            console.log("r1_4h:", this.r1_4h);
+            console.log("pp_4h:", this.pp_4h);
+            console.log("s1_4h:", this.s1_4h);
+            console.log("s2_4h:", this.s2_4h);
+
+            console.log("Resistencia y Soporte Actual 4H:");
+            console.log("resistenciaActual_4h:", this.resistenciaActual_4h);
+            console.log("soporteActual_4h:", this.soporteActual_4h);*/
+            /* console.log("Zonas de Soportes y Resistencias 4H:");
+            console.log("isZona1_4h:", this.isZona1_4h);
+            console.log("isZona2_4h:", this.isZona2_4h);
+            console.log("isZona3_4h:", this.isZona3_4h);
+            console.log("isZona4_4h:", this.isZona4_4h);*/
+            /* console.log("Resistencias por Zonas 4H:");
+            console.log("resistenciaZona1_4h:", this.resistenciaZona1_4h);
+            console.log("resistenciaZona2_4h:", this.resistenciaZona2_4h);
+            console.log("resistenciaZona3_4h:", this.resistenciaZona3_4h);
+            console.log("resistenciaZona4_4h:", this.resistenciaZona4_4h);
+            console.log(">");*/
+          }
+          // console.log("DATA DE RETORNO DE LA COMPRA: ", data);
+
+          // Log para indicadores de venta en 1h
+
           const ultimaVela = this.ultimaVela(interval);
 
           if (this.hasCruceAlcista(idNameFuncion)) {
+            // console.log("is_RSI_Alcista:", this.is_RSI_Alcista("1h"));
             if (
               this.is_RSI_Alcista(interval) &&
-              rsiActual > 50 &&
-              rsiActual <= 70
+              this.EMA_RSI8_1h >= 50 &&
+              this.EMA_RSI8_1h <= 65
             ) {
               if (
                 this.isUltimaVelaVerde(ultimaVela) &&
@@ -1227,14 +1338,27 @@ class Estrategias {
           resistenciaZona4_4h,
         } = myOperacion.metricas; // momento de la compra
 
-        if (this.price < stopLoss) {
+        /* if (this.price < stopLoss) {
           this.isStopLoss = true;
           const data = await this.vende(idNameFuncion);
           if (data) {
             return data;
           }
-        }
-        if (this.price >= resistenciaZona4_4h) {
+        }*/
+
+        /* if (this.RSI14_1h.at(-1) >= 75 || this.price >= resistenciaActual_1h) {
+          if (this.RSI14_1h.at(-1) >= 75) {
+            this.ventaRsi75 = true;
+          } else if (this.price >= resistenciaActual_1h) {
+            this.resistenciaActualAlcanzada = true;
+          }
+          const data = await this.vende(idNameFuncion);
+          if (data) {
+            return data;
+          }
+        }*/
+
+        /* if (this.price >= resistenciaZona4_4h) {
           this.ventaResistenciaZona3 = true;
           const data = await this.vende(idNameFuncion);
           if (data) {
@@ -1246,40 +1370,19 @@ class Estrategias {
           if (data) {
             return data;
           }
-        }
+        }*/
         const ultimaVela = this.ultimaVela(interval);
-        if (this.EMA_RSI8_1h < this.EMA_RSI26_1h) {
-          /*  console.log("IF VENTA #1 ", this.EMA_RSI8_15m < this.EMA_RSI26_15m);
-          console.log("EMA_RSI8_15m ", this.EMA_RSI8_15m);
-          console.log("EMA_RSI26_15m", this.EMA_RSI26_15m);
-          console.log(
-            "this.RSI14_15m <= 55",
-            this.RSI14_15m.at(-1),
-            this.RSI14_15m.at(-1) <= 55
-          );
-          console.log("es bajista?", !this.is_RSI_Alcista(interval));*/
-
-          /** En este caso buscar que !this.is_RSI_Alcista sea false es valido porque
-           * la funcion solo toma en cuenta los dos ultimos valores ya que el rsi es muy volatil
-           * por lo tanto si no es alcista significa que es bajista */
-
-          if (rsiActual < 50 && !this.is_RSI_Alcista(interval)) {
-            // console.log("Ultima Vela: ", ultimaVela);
-            // console.log("this.EMA20_15m", this.EMA20_15m.at(-1));
-
-            /* console.log(
-              "La vela es Verde? => tiene que ser false",
-              !this.isUltimaVelaVerde(ultimaVela)
-            );*/
-
-            if (
-              !this.isUltimaVelaVerde(ultimaVela) &&
-              parseFloat(ultimaVela.close) < this.EMA20_1h.at(-1)
-            ) {
-              const data = await this.vende(idNameFuncion);
-              if (data) {
-                return data;
-              }
+        if (
+          this.EMA_RSI8_1h < this.EMA_RSI26_1h &&
+          !this.is_RSI_Alcista(interval)
+        ) {
+          if (
+            !this.isUltimaVelaVerde(ultimaVela) &&
+            parseFloat(ultimaVela.close) < this.EMA20_1h.at(-1)
+          ) {
+            const data = await this.vende(idNameFuncion);
+            if (data) {
+              return data;
             }
           }
         }
@@ -1294,11 +1397,11 @@ const getVelasData = async (symbol, interval, startTime, endTime) => {
   const UN_ANO_MS = 365 * 24 * 60 * 60 * 1000; // 365 días
 
   // Validación del rango de tiempo
-  if (endTime - startTime > UN_ANO_MS) {
+  /* if (endTime - startTime > UN_ANO_MS) {
     throw new Error(
       "El rango de tiempo no puede exceder un año. Ajusta las fechas."
     );
-  }
+  }*/
   let fechaActual = startTime;
   let totalVelas = [];
 
@@ -1555,17 +1658,17 @@ const backtesting = async (fechaStartBacktesting, fechaEndBacktesting) => {
       myData.ultimosIndicadores.velas1h.push(myData1h[0].indicadores);
       myData.ultimosIndicadores.velas4h.push(myData4h[0].indicadores);
 
-      if (myData.ultimosIndicadores.velas15m.length > 5) {
+      if (myData.ultimosIndicadores.velas15m.length > 10) {
         myData.ultimosIndicadores.velas15m =
-          myData.ultimosIndicadores.velas15m.slice(-5);
+          myData.ultimosIndicadores.velas15m.slice(-10);
       }
-      if (myData.ultimosIndicadores.velas1h.length > 5) {
+      if (myData.ultimosIndicadores.velas1h.length > 10) {
         myData.ultimosIndicadores.velas1h =
-          myData.ultimosIndicadores.velas1h.slice(-5);
+          myData.ultimosIndicadores.velas1h.slice(-10);
       }
-      if (myData.ultimosIndicadores.velas4h.length > 5) {
+      if (myData.ultimosIndicadores.velas4h.length > 10) {
         myData.ultimosIndicadores.velas4h =
-          myData.ultimosIndicadores.velas4h.slice(-5);
+          myData.ultimosIndicadores.velas4h.slice(-10);
       }
       // console.log("myData15", myData15);
       // console.log("myData4h", myData4h);
@@ -1625,6 +1728,11 @@ const backtesting = async (fechaStartBacktesting, fechaEndBacktesting) => {
                   "ESTO TIENE EL ARR DE COMPRAS DESPUES DE ELIMINAR LA OPERACION",
                   myData.compras
                 );*/
+
+                console.log("Resultado: ", sell.resultado);
+                console.log(">>>>>>>>>>");
+                console.log(">>>>>>>>>>");
+                console.log(">>>>>>>>>>");
 
                 myData.historial.push(sell);
                 /*console.log(
@@ -1787,6 +1895,7 @@ const backtesting = async (fechaStartBacktesting, fechaEndBacktesting) => {
     fechaFinal: new Date(fechaEndBacktesting),
     resumenOperaciones: {
       totalAbiertas: historial.length,
+      promedioMes: historial.length / 12,
       totalGanadoras,
       totalPerdedoras,
       totalStopLoss,
@@ -1804,7 +1913,7 @@ const backtesting = async (fechaStartBacktesting, fechaEndBacktesting) => {
         maxDrawdown,
       },
     },
-    resultadoHistorial: historial.map((operacion) => operacion.resultado),
+    // resultadoHistorial: historial.map((operacion) => operacion.resultado),
   };
 
   return data;
@@ -1812,8 +1921,12 @@ const backtesting = async (fechaStartBacktesting, fechaEndBacktesting) => {
 
 (async () => {
   const resultado = await backtesting(
-    new Date("2024-11-01T00:00:00.000Z").getTime(),
-    new Date().getTime()
+    new Date("2023-01-01T00:00:00.000Z").getTime(),
+    new Date("2024-12-31T00:00:00.000Z").getTime()
   );
   console.log(resultado);
 })();
+
+/*    new Date("2024-10-24T00:00:00.000Z").getTime(),
+    new Date("2024-11-06T00:00:00.000Z").getTime()
+     */
