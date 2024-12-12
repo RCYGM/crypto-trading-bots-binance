@@ -468,7 +468,8 @@ class Estrategias {
               const perdidaMaxima = inversionUsdt * 0.02;
               const stopLoss = parseFloat(
                 (this.price - this.price * 0.01).toFixed(2)
-              );
+              ); /*parseFloat(this.ultimaVela("1h").low);*/
+              //console.log("Vela", this.ultimaVela("1h"), "stopLoss", stopLoss);
 
               const compra = inversionUsdt / this.price;
               return {
@@ -1338,13 +1339,13 @@ class Estrategias {
           resistenciaZona4_4h,
         } = myOperacion.metricas; // momento de la compra
 
-        /* if (this.price < stopLoss) {
+        if (this.price < stopLoss) {
           this.isStopLoss = true;
           const data = await this.vende(idNameFuncion);
           if (data) {
             return data;
           }
-        }*/
+        }
 
         /* if (this.RSI14_1h.at(-1) >= 75 || this.price >= resistenciaActual_1h) {
           if (this.RSI14_1h.at(-1) >= 75) {
@@ -1642,7 +1643,7 @@ const backtesting = async (fechaStartBacktesting, fechaEndBacktesting) => {
       );
 
       const myData1h = obtenerIndicadores(
-        data15mArr,
+        data1hArr,
         "1h",
         priceActual,
         priceCloseArr_1h
