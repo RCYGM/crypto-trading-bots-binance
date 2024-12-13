@@ -1,12 +1,6 @@
-const symbol = "BTCUSDT";
-const temporalidad = "1h";
-
-//NO TOQUES NADA A PARTIR DE AQUI SI NO DOMINAS JAVASCRIPT
-
-// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-const idEstrategia = `ema8_ema26_rsi${temporalidad}`;
 const Binance = require("binance-api-node").default;
 
+// Cargar credenciales desde el archivo .env
 require("dotenv").config();
 const client = Binance({
   apiKey: process.env.BINANCE_API_KEY,
@@ -950,21 +944,16 @@ class Estrategias {
 
       if (buySell === "buy") {
         if (!this.isZona3_4h && !this.isZona4_4h && resistenciaActual) {
-          console.log(`1/4 condiciones de compras cumplidas`, new Date());
-
           if (this.hasCruceAlcista(idNameFuncion)) {
-            console.log(`2/4 condiciones de compras cumplidas`, new Date());
             if (
               this.is_RSI_Alcista(interval) &&
               EMA8_RSI >= 50 &&
               EMA8_RSI <= 65
             ) {
-              console.log(`3/4 condiciones de compras cumplidas`, new Date());
               if (
                 this.isVelaVerde(ultimaVela) &&
                 parseFloat(ultimaVela.close) > EMA20
               ) {
-                console.log(`4/4 condiciones de compras cumplidas`, new Date());
                 const data = await this.compra(idNameFuncion);
                 if (data) {
                   return data;
@@ -980,7 +969,6 @@ class Estrategias {
         console.log(`RSI ${EMA8_RSI}`);
 
         if (this.price < stopLoss) {
-          console.log("Venta en Stop Loss");
           this.isStopLoss = true;
           const data = await this.vende(idNameFuncion);
           if (data) {
@@ -989,12 +977,10 @@ class Estrategias {
         }
 
         if (EMA8_RSI < EMA26_RSI && !this.is_RSI_Alcista(interval)) {
-          console.log(`1/2 condiciones de venta cumplidas`, new Date());
           if (
             !this.isVelaVerde(ultimaVela) &&
             parseFloat(ultimaVela.close) < EMA20
           ) {
-            console.log(`2/2 condiciones de venta cumplidas`, new Date());
             const data = await this.vende(idNameFuncion, totalBtc);
             if (data) {
               return data;
@@ -1008,161 +994,536 @@ class Estrategias {
   };
 }
 
-const getVelasData = async (symbol, interval) => {
-  const velas = await client.candles({
-    symbol: symbol,
-    interval: interval,
-  });
-  return velas;
+const getVelasData = async (symbol, interval, startTime, endTime) => {
+  const UN_ANO_MS = 365 * 24 * 60 * 60 * 1000; // 365 días
+
+  // Validación del rango de tiempo
+  if (endTime - startTime > UN_ANO_MS) {
+    throw new Error(
+      "El rango de tiempo no puede exceder un año. Ajusta las fechas."
+    );
+  }
+  let fechaActual = startTime;
+  let totalVelas = [];
+
+  while (fechaActual < endTime) {
+    try {
+      const velas = await client.candles({
+        symbol: symbol,
+        interval: interval,
+        limit: 1000, // Máximo permitido por la API
+        startTime: fechaActual,
+      });
+      if (velas.length === 0) {
+        // console.log("No se obtuvieron más datos, finalizando.");
+        break;
+      }
+
+      totalVelas.push(...velas);
+      fechaActual = velas[velas.length - 1].closeTime;
+
+      /* console.log(
+          `Solicitadas ${velas.length} velas. Fecha actualizada:`,
+          new Date(fechaActual).toISOString()
+        );*/
+
+      if (fechaActual >= endTime) {
+        // console.log("Alcanzada la fecha final.");
+        break;
+      }
+    } catch (error) {
+      console.log("Error en el bucle de la funciongetVelasData", error.message);
+      break;
+    }
+  }
+  // console.log("Estas son todas las velas de esta solicitud: ", totalVelas);
+
+  return totalVelas;
 };
 
-const trader = async () => {
-  const prices = await client.prices().then((prices) => {
-    const listaPrecios = {
-      BTCUSDT: parseFloat(parseFloat(prices.BTCUSDT).toFixed(2)),
-      ETHUSDT: parseFloat(parseFloat(prices.ETHUSDT).toFixed(2)),
-    };
+//const endTime = //Actualizar con la ultima fecha
 
-    return listaPrecios;
-  });
+let conteo = 0;
+let symbol = "BTCUSDT";
+const temporalidad = "1h";
+const idEstrategia = `ema8_ema26_rsi${temporalidad}`;
 
-  const data1mArr = await getVelasData(symbol, "1m");
-  const data5mArr = await getVelasData(symbol, "5m");
-  const data15mArr = await getVelasData(symbol, "15m");
-  const data30mArr = await getVelasData(symbol, "30m");
-  const data1hmArr = await getVelasData(symbol, "1h");
-  const data4hArr = await getVelasData(symbol, "4h");
+let actualizarVelas5m = 0;
+let actualizarVelas15m = 0;
+let actualizarVelas30m = 0;
+let actualizarVelas1h = 0;
+let actualizarVelas4h = 0;
 
-  const obtenerIndicadores = (velas, interval, price) => {
-    const priceCloseArr = velas.map((vela) => parseFloat(vela.close));
-
-    const ema10 = indicadores.calculateEMA(priceCloseArr, 10);
-
-    const ema20 = indicadores.calculateEMA(priceCloseArr, 20);
-
-    const ema50 = indicadores.calculateEMA(priceCloseArr, 50);
-
-    const rsi14 = indicadores.calculateRSI(priceCloseArr, 14);
-
-    const ema8_rsi = indicadores.calculateEMA_RSI(rsi14, 8);
-
-    const ema26_rsi = indicadores.calculateEMA_RSI(rsi14, 26);
-
-    const getHasVolumen = indicadores.calculateHasVolumen(velas.slice(-5));
-
-    const sopResObj = indicadores.calculateSopRes(priceCloseArr, price);
-
-    const data = {
-      candLesticksInterval: interval,
-      candLesticks: velas,
-      indicadores: {
-        [`EMA10_${interval}`]: ema10,
-        [`EMA20_${interval}`]: ema20,
-        [`EMA50_${interval}`]: ema50,
-        [`RSI14_${interval}`]: rsi14,
-        [`EMA8_RSI_${interval}`]: ema8_rsi,
-        [`EMA26_RSI_${interval}`]: ema26_rsi,
-        [`ultimasVelasData_${interval}`]: {
-          ultimasVelas: velas.slice(-5),
-          hasVolumen:
-            getHasVolumen.hasVolumen3velas || getHasVolumen.hasVolumen5velas,
-          hasVolumen3Velas: getHasVolumen.hasVolumen3velas,
-          hasVolumen5Velas: getHasVolumen.hasVolumen5velas,
-        },
-        [`SR_${interval}`]: sopResObj,
-      },
-    };
-    if (!data) {
-      throw new Error(
-        `Error al entregar los datos de obtenerIndicadores en este intervalo ${interval}`
-      );
-    }
-    return data;
-  };
-
-  const myData1 = obtenerIndicadores(data1mArr, "1m", prices.BTCUSDT);
-  const myData5 = obtenerIndicadores(data5mArr, "5m", prices.BTCUSDT);
-  const myData15 = obtenerIndicadores(data15mArr, "15m", prices.BTCUSDT);
-  const myData30 = obtenerIndicadores(data30mArr, "30m", prices.BTCUSDT);
-  const myData1h = obtenerIndicadores(data1hmArr, "1h", prices.BTCUSDT);
-  const myData4h = obtenerIndicadores(data4hArr, "4h", prices.BTCUSDT);
-
-  myData.ultimosIndicadores.velas1m.push(myData1.indicadores);
-  myData.ultimosIndicadores.velas5m.push(myData5.indicadores);
-  myData.ultimosIndicadores.velas15m.push(myData15.indicadores);
-  myData.ultimosIndicadores.velas30m.push(myData30.indicadores);
-  myData.ultimosIndicadores.velas1h.push(myData1h.indicadores);
-  myData.ultimosIndicadores.velas4h.push(myData4h.indicadores);
-
-  if (myData.ultimosIndicadores.velas1m.length > 10) {
-    myData.ultimosIndicadores.velas1m =
-      myData.ultimosIndicadores.velas1m.slice(-10);
-  }
-  if (myData.ultimosIndicadores.velas5m.length > 10) {
-    myData.ultimosIndicadores.velas5m =
-      myData.ultimosIndicadores.velas5m.slice(-10);
-  }
-  if (myData.ultimosIndicadores.velas15m.length > 10) {
-    myData.ultimosIndicadores.velas15m =
-      myData.ultimosIndicadores.velas15m.slice(-10);
-  }
-  if (myData.ultimosIndicadores.velas30m.length > 10) {
-    myData.ultimosIndicadores.velas30m =
-      myData.ultimosIndicadores.velas30m.slice(-10);
-  }
-  if (myData.ultimosIndicadores.velas1h.length > 10) {
-    myData.ultimosIndicadores.velas1h =
-      myData.ultimosIndicadores.velas1h.slice(-10);
-  }
-  if (myData.ultimosIndicadores.velas4h.length > 10) {
-    myData.ultimosIndicadores.velas4h =
-      myData.ultimosIndicadores.velas4h.slice(-10);
-  }
-
-  const estrategias = new Estrategias(
-    myData1,
-    myData5,
-    myData15,
-    myData30,
-    myData1h,
-    myData4h,
-    prices.BTCUSDT,
-    myData.compras,
-    myData.ultimosIndicadores
+const backtesting = async (fechaStartBacktesting, fechaEndBacktesting) => {
+  const startBacktesting = fechaStartBacktesting; //new Date("2024-11-01T00:00:00.000Z").getTime();
+  const endBacktesting = fechaEndBacktesting; // new Date().getTime();
+  console.log(
+    "startBacktesting",
+    startBacktesting,
+    "=",
+    convertToBerlinTime(startBacktesting)
+  );
+  console.log(
+    "endBacktesting",
+    endBacktesting,
+    "=",
+    convertToBerlinTime(endBacktesting)
   );
 
-  // Busca compra
-  if (myData.compras.length < 1) {
-    const buy = await estrategias.ema8_ema26_rsi(temporalidad, "buy");
+  const banckData1m = await getVelasData(
+    symbol,
+    "1m",
+    startBacktesting,
+    endBacktesting
+  );
 
-    if (buy) {
-      console.log("He comprado: ", buy);
-      myData.compras.push(buy);
-    } else {
-      console.log(`Última revisión en ${symbol} ${temporalidad}`, new Date());
+  const banckData5m = await getVelasData(
+    symbol,
+    "5m",
+    startBacktesting,
+    endBacktesting
+  );
+
+  const banckData15m = await getVelasData(
+    symbol,
+    "15m",
+    startBacktesting,
+    endBacktesting
+  );
+
+  const banckData30m = await getVelasData(
+    symbol,
+    "30m",
+    startBacktesting,
+    endBacktesting
+  );
+
+  const banckData1h = await getVelasData(
+    symbol,
+    "1h",
+    startBacktesting,
+    endBacktesting
+  );
+
+  const banckData4h = await getVelasData(
+    symbol,
+    "4h",
+    startBacktesting,
+    endBacktesting
+  );
+
+  console.log("Total de velas banckData1m: ", banckData1m.length);
+  console.log("Total de velas banckData5m: ", banckData5m.length);
+  console.log("Total de velas banckData15m: ", banckData15m.length);
+  console.log("Total de velas banckData30m: ", banckData30m.length);
+  console.log("Total de velas banckData1h: ", banckData1h.length);
+  console.log("Total de velas banckData4h: ", banckData4h.length);
+
+  let actualizarArrData = 14400;
+  const buscarVela = (banckData, ultimosDatos1m) => {
+    const horaCierreVelaDeseada = ultimosDatos1m.slice(-1)[0].closeTime;
+    const velaDeseada = banckData.find(
+      (vela) =>
+        vela.openTime <= horaCierreVelaDeseada &&
+        vela.closeTime >= horaCierreVelaDeseada
+    );
+    if (!velaDeseada) {
+      throw new Error(
+        `Error No se actualizó correctamente la función buscarVela`
+      );
     }
-  }
+    const indiceVela = banckData.findIndex(
+      (vela) => vela.close === velaDeseada.close
+    );
+    if (indiceVela === -1) {
+      console.error(
+        "Error: No se encontró el índice de la vela de 4 horas correspondiente."
+      );
+      throw new Error("Error al buscar el índice de la vela de 4 horas.");
+    }
+    return indiceVela;
+  };
 
-  // Busca Venta
-  if (myData.compras.length >= 1) {
-    for (let i = 0; i < myData.compras.length; i++) {
-      if (myData.compras[i].informacion.id === idEstrategia) {
-        const sell = await estrategias.ema8_ema26_rsi(temporalidad, "sell");
+  let data1mArr = banckData1m.slice(0, actualizarArrData);
 
-        if (sell) {
-          if (sell.informacion.status === "finalizado") {
-            const ventaId = sell.compra.binanceOrdenData.orderId;
-            const nuevoArr = myData.compras.filter(
-              (item) => item.binanceOrdenData.orderId !== ventaId
-            );
-            myData.compras = nuevoArr;
-            myData.historial.push(sell);
-            console.log("He vendido y este es el resultado: ", sell.resultado);
+  let data5mArr = banckData5m.slice(0, buscarVela(banckData5m, data1mArr) + 1);
+
+  let data15mArr = banckData15m.slice(
+    0,
+    buscarVela(banckData15m, data1mArr) + 1
+  );
+
+  let data30mArr = banckData30m.slice(
+    0,
+    buscarVela(banckData30m, data1mArr) + 1
+  );
+
+  let data1hArr = banckData1h.slice(0, buscarVela(banckData1h, data1mArr) + 1);
+
+  let data4hArr = banckData4h.slice(0, buscarVela(banckData4h, data1mArr) + 1);
+
+  console.log("data1mArr", data1mArr.length);
+  console.log("data5mArr", data5mArr.length);
+  console.log("data15mArr", data15mArr.length);
+  console.log("data30mArr", data30mArr.length);
+  console.log("data1hArr", data1hArr.length);
+  console.log("data4hArr", data4hArr.length);
+
+  while (true) {
+    try {
+      const priceActual = data1mArr.slice(-1)[0].close;
+
+      const priceCloseArr_1m = data1mArr.map((vela) => parseFloat(vela.close));
+      const priceCloseArr_5m = data5mArr.map((vela) => parseFloat(vela.close));
+      const priceCloseArr_15m = data15mArr.map((vela) =>
+        parseFloat(vela.close)
+      );
+      const priceCloseArr_30m = data30mArr.map((vela) =>
+        parseFloat(vela.close)
+      );
+      const priceCloseArr_1h = data1hArr.map((vela) => parseFloat(vela.close));
+      const priceCloseArr_4h = data4hArr.map((vela) => parseFloat(vela.close));
+
+      const obtenerIndicadores = (velas, interval, price, priceCloseArr) => {
+        const ema10 = indicadores.calculateEMA(priceCloseArr, 10);
+        const ema20 = indicadores.calculateEMA(priceCloseArr, 20);
+        const ema50 = indicadores.calculateEMA(priceCloseArr, 50);
+        const rsi14 = indicadores.calculateRSI(priceCloseArr, 14);
+        const ema_rsi8 = indicadores.calculateEMA_RSI(rsi14, 8);
+        const ema_rsi26 = indicadores.calculateEMA_RSI(rsi14, 26);
+        const getHasVolumen = indicadores.calculateHasVolumen(velas.slice(-5));
+
+        const sopResObj = indicadores.calculateSopRes(priceCloseArr, price);
+        const data = {
+          candLesticksInterval: interval,
+          candLesticks: velas,
+          indicadores: {
+            [`EMA10_${interval}`]: ema10,
+            [`EMA20_${interval}`]: ema20,
+            [`EMA50_${interval}`]: ema50,
+            [`RSI14_${interval}`]: rsi14,
+            [`EMA_RSI8_${interval}`]: ema_rsi8,
+            [`EMA_RSI26_${interval}`]: ema_rsi26,
+            [`ultimasVelasData_${interval}`]: {
+              ultimasVelas: velas.slice(-5),
+              hasVolumen:
+                getHasVolumen.hasVolumen3velas ||
+                getHasVolumen.hasVolumen5velas,
+              hasVolumen3Velas: getHasVolumen.hasVolumen3velas,
+              hasVolumen5Velas: getHasVolumen.hasVolumen5velas,
+            },
+            [`SR_${interval}`]: sopResObj,
+          },
+        };
+
+        return data;
+      };
+
+      const myData1 = obtenerIndicadores(
+        data1mArr,
+        "1m",
+        priceActual,
+        priceCloseArr_1m
+      );
+      const myData5 = obtenerIndicadores(
+        data5mArr,
+        "5m",
+        priceActual,
+        priceCloseArr_5m
+      );
+      const myData15 = obtenerIndicadores(
+        data15mArr,
+        "15m",
+        priceActual,
+        priceCloseArr_15m
+      );
+      const myData30 = obtenerIndicadores(
+        data15mArr,
+        "30m",
+        priceActual,
+        priceCloseArr_30m
+      );
+
+      const myData1h = obtenerIndicadores(
+        data1hArr,
+        "1h",
+        priceActual,
+        priceCloseArr_1h
+      );
+      const myData4h = obtenerIndicadores(
+        data4hArr,
+        "4h",
+        priceActual,
+        priceCloseArr_4h
+      );
+
+      /*console.log("myData1", myData1.indicadores);
+      console.log("myData5", myData5.indicadores);
+      console.log("myData15", myData15.indicadores);
+      console.log("myData30", myData30.indicadores);
+      console.log("myData1h", myData1h.indicadores);
+      console.log("myData4h", myData4h.indicadores);*/
+
+      myData.ultimosIndicadores.velas1m.push(myData1.indicadores);
+      myData.ultimosIndicadores.velas5m.push(myData5.indicadores);
+      myData.ultimosIndicadores.velas15m.push(myData15.indicadores);
+      myData.ultimosIndicadores.velas30m.push(myData30.indicadores);
+      myData.ultimosIndicadores.velas1h.push(myData1h.indicadores);
+      myData.ultimosIndicadores.velas4h.push(myData4h.indicadores);
+
+      if (myData.ultimosIndicadores.velas1m.length > 10) {
+        myData.ultimosIndicadores.velas1m =
+          myData.ultimosIndicadores.velas1m.slice(-10);
+      }
+      if (myData.ultimosIndicadores.velas5m.length > 10) {
+        myData.ultimosIndicadores.velas5m =
+          myData.ultimosIndicadores.velas5m.slice(-10);
+      }
+      if (myData.ultimosIndicadores.velas15m.length > 10) {
+        myData.ultimosIndicadores.velas15m =
+          myData.ultimosIndicadores.velas15m.slice(-10);
+      }
+      if (myData.ultimosIndicadores.velas30m.length > 10) {
+        myData.ultimosIndicadores.velas30m =
+          myData.ultimosIndicadores.velas30m.slice(-10);
+      }
+      if (myData.ultimosIndicadores.velas1h.length > 10) {
+        myData.ultimosIndicadores.velas1h =
+          myData.ultimosIndicadores.velas1h.slice(-10);
+      }
+      if (myData.ultimosIndicadores.velas4h.length > 10) {
+        myData.ultimosIndicadores.velas4h =
+          myData.ultimosIndicadores.velas4h.slice(-10);
+      }
+
+      const estrategias = new Estrategias(
+        myData1,
+        myData5,
+        myData15,
+        myData30,
+        myData1h,
+        myData4h,
+        priceActual,
+        myData.compras,
+        myData.ultimosIndicadores
+      );
+
+      // Busca compra
+      if (myData.compras.length < 1) {
+        const buy = await estrategias.ema8_ema26_rsi(temporalidad, "buy");
+
+        if (buy) {
+          myData.compras.push(buy);
+        }
+      }
+
+      // Busca Venta
+      if (myData.compras.length >= 1) {
+        for (let i = 0; i < myData.compras.length; i++) {
+          if (myData.compras[i].informacion.id === idEstrategia) {
+            const sell = await estrategias.ema8_ema26_rsi(temporalidad, "sell");
+
+            if (sell) {
+              if (sell.informacion.status === "finalizado") {
+                // ELIMINO
+                const ventaId = sell.compra.binanceOrdenData.orderId;
+                const nuevoArr = myData.compras.filter(
+                  (item) => item.binanceOrdenData.orderId !== ventaId
+                );
+                myData.compras = nuevoArr;
+
+                console.log("Resultado: ", sell.resultado);
+                console.log(">>>>>>>>>>");
+                console.log(">>>>>>>>>>");
+
+                myData.historial.push(sell);
+              }
+            }
           }
         }
       }
+
+      actualizarArrData++;
+      actualizarVelas5m++;
+      actualizarVelas15m++;
+      actualizarVelas30m++;
+      actualizarVelas1h++;
+      actualizarVelas4h++;
+
+      data1mArr = banckData1m.slice(
+        Math.max(0, actualizarArrData - 14399),
+        actualizarArrData
+      );
+
+      if (actualizarVelas5m === 5) {
+        actualizarVelas5m = 0;
+        data5mArr = banckData5m.slice(
+          Math.max(0, buscarVela(banckData5m, data1mArr) - 2879),
+          buscarVela(banckData5m, data1mArr) + 1
+        );
+      }
+
+      if (actualizarVelas15m === 15) {
+        actualizarVelas15m = 0;
+        data15mArr = banckData15m.slice(
+          Math.max(0, buscarVela(banckData15m, data1mArr) - 959),
+          buscarVela(banckData15m, data1mArr) + 1
+        );
+      }
+
+      if (actualizarVelas30m === 30) {
+        actualizarVelas30m = 0;
+        data30mArr = banckData30m.slice(
+          Math.max(0, buscarVela(banckData30m, data1mArr) - 479),
+          buscarVela(banckData30m, data1mArr) + 1
+        );
+      }
+
+      if (actualizarVelas1h === 60) {
+        actualizarVelas1h = 0;
+        data1hArr = banckData1h.slice(
+          Math.max(0, buscarVela(banckData1h, data1mArr) - 239),
+          buscarVela(banckData1h, data1mArr) + 1
+        );
+      }
+
+      if (actualizarVelas4h === 240) {
+        actualizarVelas4h = 0;
+        data4hArr = banckData4h.slice(
+          Math.max(0, buscarVela(banckData4h, data1mArr) - 59),
+          buscarVela(banckData4h, data1mArr) + 1
+        );
+      }
+
+      if (data1mArr.slice(-1)[0].closeTime >= endBacktesting) {
+        console.log("Arr recorrido completo");
+        break;
+      }
+    } catch (error) {
+      console.log("Error en Backtesting", error.message);
+      break;
     }
   }
+  const historial = myData.historial;
+
+  // Totales de operaciones ganadoras y perdedoras
+  const totalGanadoras = historial.filter(
+    (operacion) => operacion.resultado.isGanancia === true
+  ).length;
+  // Ganancia total y pérdida total
+  const gananciaTotal = parseFloat(
+    historial
+      .filter((operacion) => operacion.resultado.isGanancia === true)
+      .map((operacion) => operacion.resultado.usdt - 20)
+      .reduce((a, b) => a + b, 0)
+      .toFixed(2)
+  );
+  // Promedios de ganancia y pérdida
+  const gananciaPromedio = parseFloat(
+    (gananciaTotal / totalGanadoras || 0).toFixed(2)
+  );
+
+  const totalPerdedoras = historial.filter(
+    (operacion) => operacion.resultado.isGanancia === false
+  ).length;
+
+  const perdidaTotal = parseFloat(
+    Math.abs(
+      historial
+        .filter((operacion) => operacion.resultado.isGanancia === false)
+        .map((operacion) => operacion.resultado.usdt - 20)
+        .reduce((a, b) => a + b, 0)
+    ).toFixed(2)
+  );
+
+  const perdidaPromedio = parseFloat(
+    (perdidaTotal / totalPerdedoras || 0).toFixed(2)
+  );
+
+  //total stoploss
+  const totalStopLoss = historial.filter(
+    (operacion) => operacion.resultado.isStopLoss === true
+  ).length;
+
+  // Fórmulas de rendimiento
+  const winRate = parseFloat(
+    ((totalGanadoras / historial.length) * 100 || 0).toFixed(2)
+  );
+  const winLossRatio = parseFloat(
+    (totalGanadoras / totalPerdedoras || 0).toFixed(2)
+  );
+  const profitFactor = parseFloat(
+    (gananciaTotal / perdidaTotal || 0).toFixed(2)
+  );
+
+  // Expected Value (EV)
+  const probabilidadGanar = parseFloat(
+    (totalGanadoras / historial.length || 0).toFixed(2)
+  );
+  const probabilidadPerder = parseFloat(
+    (totalPerdedoras / historial.length || 0).toFixed(2)
+  );
+  const expectedValue = parseFloat(
+    (
+      probabilidadGanar * gananciaPromedio -
+        probabilidadPerder * perdidaPromedio || 0
+    ).toFixed(2)
+  );
+
+  // Drawdown (máxima caída)
+  let maxDrawdown = 0;
+  let peak = 0;
+  historial.reduce((equity, operacion) => {
+    const nuevoEquity =
+      equity +
+      (operacion.resultado.isGanancia
+        ? operacion.resultado.usdt - 20
+        : -(20 - operacion.resultado.usdt));
+    peak = Math.max(peak, nuevoEquity);
+    const drawdown = peak - nuevoEquity;
+    maxDrawdown = Math.max(maxDrawdown, drawdown);
+    return nuevoEquity;
+  }, 0);
+  maxDrawdown = parseFloat(maxDrawdown.toFixed(2));
+
+  // Datos de resumen
+  const data = {
+    fechaInicio: new Date(fechaStartBacktesting),
+    fechaFinal: new Date(fechaEndBacktesting),
+    resumenOperaciones: {
+      totalAbiertas: historial.length,
+      promedioMes: historial.length / 12,
+      totalGanadoras,
+      totalPerdedoras,
+      totalStopLoss,
+      gananciaTotal,
+      gananciaPromedio,
+      probabilidadGanar,
+      perdidaTotal,
+      perdidaPromedio,
+      probabilidadPerder,
+      rendimiento: {
+        winRate,
+        winLossRatio,
+        profitFactor,
+        expectedValue,
+        maxDrawdown,
+      },
+    },
+    // resultadoHistorial: historial.map((operacion) => operacion.resultado),
+  };
+
+  return data;
 };
 
-setInterval(trader, 60000);
+(async () => {
+  const resultado = await backtesting(
+    new Date("2024-11-01T00:00:00.000Z").getTime(),
+    new Date(/*"2024-12-31T00:00:00.000Z"*/).getTime()
+  );
+  console.log(resultado);
+})();
+
+/*    new Date("2024-10-24T00:00:00.000Z").getTime(),
+    new Date("2024-11-06T00:00:00.000Z").getTime()
+     */

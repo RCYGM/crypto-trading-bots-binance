@@ -129,31 +129,21 @@ class Indicadores {
 
     for (let i = 0; i < preciosArr.length; i++) {
       if (preciosArr[i] > r2) {
-        r2 = preciosArr[i];
+        r2 = parseFloat(preciosArr[i].toFixed(2));
       }
 
       if (preciosArr[i] < s2) {
-        s2 = preciosArr[i];
+        s2 = parseFloat(preciosArr[i].toFixed(2));
       }
     }
 
-    const pp = (r2 + s2) / 2;
-    const r1 = (pp + r2) / 2;
-    const s1 = (pp + s2) / 2;
-    /*
-    console.log(
-      "Resistencia Superior",
-      r2,
-      "Resistencia Inferior",
-      r1,
-      "PP",
-      pp,
-      "Soporte Inferior",
-      s1,
-      "Soporte Superior",
-      s2
-    );
-*/
+    let pp = (r2 + s2) / 2;
+    let r1 = (pp + r2) / 2;
+    let s1 = (pp + s2) / 2;
+
+    pp = parseFloat(pp.toFixed(2));
+    r1 = parseFloat(r1.toFixed(2));
+    s1 = parseFloat(s1.toFixed(2));
 
     const buscarSoporteResistenciaActual = () => {
       let soporteResistenciaActual = {};
@@ -271,10 +261,10 @@ class Indicadores {
       isZona2,
       isZona3,
       isZona4,
-      resistenciaZona1,
-      resistenciaZona2,
-      resistenciaZona3,
-      resistenciaZona4,
+      resistenciaZona1: parseFloat(resistenciaZona1.toFixed(2)),
+      resistenciaZona2: parseFloat(resistenciaZona2.toFixed(2)),
+      resistenciaZona3: parseFloat(resistenciaZona3.toFixed(2)),
+      resistenciaZona4: parseFloat(resistenciaZona4.toFixed(2)),
     };
   }
 
