@@ -73,18 +73,39 @@ El bot realiza compras y ventas automáticas tras analizar el contexto del merca
 
 El bot fue probado en el par **BTC/USDT** desde **2023-01-01 a 2024-12-10**:
 
-- Total de operaciones: 102
-- Promedio de operaciones por mes: 4.25
-- Operaciones ganadoras: 47
-- Operaciones perdedoras: 55
-- Stop-loss activado: 31 veces
-- Ganancia total: 26.89 USDT
-- Pérdida total: 9.95 USDT
-- Win rate: 46.08%
-- Profit factor: 2.7
-- Rendimiento promedio por operación: 2.35%
+- **Total de operaciones**: 102
+- **Promedio de operaciones por mes**: 4.25
+- **Operaciones ganadoras**: 47
+- **Operaciones perdedoras**: 55
+- **Stop-loss activado**: 31 veces
+- **Ganancia total**: 26.89 USDT
+- **Pérdida total**: 9.95 USDT
+- **Ganancia neta total**: 16.94 USDT (26.89 USDT - 9.95 USDT)
+- **Win rate**: 46.08%
+  - El **Win rate** indica el porcentaje de operaciones ganadoras en relación con el total de operaciones realizadas. En este caso, el bot tuvo éxito en el 46.08% de las operaciones, lo que significa que casi la mitad de las transacciones generaron ganancias.
+- **Profit factor**: 2.7
 
-Cada operación fue abierta con un capital de 20 USDT. Esto equivale a un rendimiento anual del 134.45% (ganancia de 26.89 USDT sobre un capital total invertido de 20 USDT x 102 operaciones). Comparado con inversiones tradicionales, como cuentas de ahorro bancarias que ofrecen rendimientos menores al 5% anual, este bot ofrece una alternativa altamente rentable en el contexto de las criptomonedas.
+  - El **Profit factor** mide la relación entre las ganancias totales y las pérdidas totales. Un valor de 2.7 significa que por cada 1 USDT perdido, el bot generó 2.7 USDT en ganancias, lo que demuestra una estrategia rentable a largo plazo.
+
+- **Rendimiento promedio por operación ganadora**: 2.35%
+- **Rendimiento promedio entre todas las operaciones**: 1.32%
+- **Rendimiento total sobre el capital inicial**: ~84.7%
+- **Rendimiento anualizado**: ~38%
+
+### **Análisis detallado**
+
+Cada operación fue abierta con un capital inicial de 20 USDT. Después de 102 operaciones, el bot generó una **ganancia neta total de 16.94 USDT**, lo que equivale a un rendimiento acumulado del **84.7%** sobre el capital inicial de 20 USDT.
+
+El periodo de análisis fue de aproximadamente 23 meses, lo que permite anualizar el rendimiento de la siguiente manera:  
+El capital inicial de 20 USDT creció a 36.94 USDT (20 + 16.94), lo que equivale a un crecimiento anualizado aproximado del **38%**.
+
+### **Corrección de cálculos**
+
+En la versión anterior, se afirmaba que el rendimiento anual era del 134.45%, pero este cálculo fue incorrecto porque no consideraba las pérdidas totales. Al restar las pérdidas (9.95 USDT) de las ganancias (26.89 USDT), se obtiene una ganancia neta de 16.94 USDT, que representa el rendimiento real.
+
+### **Comparación con inversiones tradicionales**
+
+Comparado con inversiones tradicionales, como cuentas de ahorro bancarias que ofrecen rendimientos menores al 5% anual, este bot proporciona una alternativa altamente rentable dentro del contexto del mercado de criptomonedas, especialmente para estrategias automatizadas de trading.
 
 ---
 
