@@ -1,17 +1,26 @@
 {
   "name": "crypto-trading-bots-binance",
   "version": "1.0.0",
-  "description": "",
+  "description": "Un bot de trading automatizado para Binance, diseñado para estrategias optimizadas de criptomonedas.",
   "main": "index.js",
   "scripts": {
+    "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/RCYGM/crypto-trading-bots-binance.git"
   },
+  "keywords": [
+    "trading",
+    "bot",
+    "crypto",
+    "binance",
+    "automated-trading",
+    "nodejs"
+  ],
   "author": "Jürgen Müller",
-  "license": "ISC",
+  "license": "CC-BY-NC-4.0",
   "bugs": {
     "url": "https://github.com/RCYGM/crypto-trading-bots-binance/issues"
   },
