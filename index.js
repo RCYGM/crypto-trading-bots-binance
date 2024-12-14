@@ -1,10 +1,3 @@
-const symbol = "BTCUSDT";
-const temporalidad = "1h";
-
-//NO TOQUES NADA A PARTIR DE AQUI SI NO DOMINAS JAVASCRIPT
-
-// >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-const idEstrategia = `ema8_ema26_rsi${temporalidad}`;
 const Binance = require("binance-api-node").default;
 
 require("dotenv").config();
@@ -25,20 +18,10 @@ client
     console.log("Error al conenctar con Binance:", error.message);
   });
 
-const convertToBerlinTime = (utcTime) => {
-  const date = new Date(utcTime); // UTC timestamp de Binance
-  const formatter = new Intl.DateTimeFormat("en-US", {
-    timeZone: "Europe/Berlin", // Zona horaria UTC+1 Berlín
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  });
-  return formatter.format(date);
-};
-
+const symbol = "BTCUSDT";
+const temporalidad = "1h";
+const tiempoEvaluacion = 60000;
+const idEstrategia = `ema8_ema26_rsi${temporalidad}`;
 const myData = {
   candLesticksData: [],
   ultimosIndicadores: {
@@ -52,6 +35,20 @@ const myData = {
   compras: [],
   ventas: [],
   historial: [],
+};
+
+const convertToBerlinTime = (utcTime) => {
+  const date = new Date(utcTime); // UTC timestamp de Binance
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Europe/Berlin", // Zona horaria UTC+1 Berlín
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+  return formatter.format(date);
 };
 
 const Indicadores = require("./indicadores");
@@ -949,22 +946,62 @@ class Estrategias {
       } = this.SR_4h;
 
       if (buySell === "buy") {
+        console.log("=== Primeras Condiciones ===");
+        console.log("this.isZona3_4h (false):", this.isZona3_4h);
+        console.log("this.isZona4_4h (false):", this.isZona4_4h);
+        console.log(
+          "Resistencia actual (Tiene que existir una resistencia):",
+          resistenciaActual
+        );
+
         if (!this.isZona3_4h && !this.isZona4_4h && resistenciaActual) {
-          console.log(`1/4 condiciones de compras cumplidas`, new Date());
+          console.log("✅ 1/4 condiciones de compra cumplidas", new Date());
+          console.log(">>");
+          console.log("=== Segunda Condición ===");
+          console.log(
+            "this.hasCruceAlcista(idNameFuncion) (true):",
+            this.hasCruceAlcista(idNameFuncion)
+          );
 
           if (this.hasCruceAlcista(idNameFuncion)) {
-            console.log(`2/4 condiciones de compras cumplidas`, new Date());
+            console.log("✅ 2/4 condiciones de compra cumplidas", new Date());
+            console.log(">>");
+            console.log("=== Tercera Condición ===");
+            console.log(
+              "this.is_RSI_Alcista(interval) (true):",
+              this.is_RSI_Alcista(interval)
+            );
+            console.log("EMA8_RSI (>= 50 y <= 65):", EMA8_RSI);
+            console.log(
+              "Condición EMA8_RSI cumple:",
+              EMA8_RSI >= 50 && EMA8_RSI <= 65
+            );
+
             if (
               this.is_RSI_Alcista(interval) &&
               EMA8_RSI >= 50 &&
               EMA8_RSI <= 65
             ) {
-              console.log(`3/4 condiciones de compras cumplidas`, new Date());
+              console.log("✅ 3/4 condiciones de compra cumplidas", new Date());
+              console.log(">>");
+              console.log("=== Cuarta Condición ===");
+              console.log(
+                "¿La última vela es verde?",
+                this.isVelaVerde(ultimaVela)
+              );
+              console.log(
+                "¿Cerró por encima de la EMA de 20?",
+                parseFloat(ultimaVela.close) > EMA20
+              );
+
               if (
                 this.isVelaVerde(ultimaVela) &&
                 parseFloat(ultimaVela.close) > EMA20
               ) {
-                console.log(`4/4 condiciones de compras cumplidas`, new Date());
+                console.log(
+                  "✅ 4/4 condiciones de compra cumplidas",
+                  new Date()
+                );
                 const data = await this.compra(idNameFuncion);
                 if (data) {
                   return data;
@@ -977,10 +1014,13 @@ class Estrategias {
         const myOperacion = this.encontrarOrden(idNameFuncion);
         const { stopLoss, totalBtc } = myOperacion.metricas;
 
-        console.log(`RSI ${EMA8_RSI}`);
+        console.log("=== Iniciando proceso de venta ===");
+        console.log(`RSI (EMA8): ${EMA8_RSI}`);
+        console.log(`Stop Loss: ${stopLoss}`);
+        console.log(`Total BTC: ${totalBtc}`);
 
         if (this.price < stopLoss) {
-          console.log("Venta en Stop Loss");
+          console.log("❌ Venta en Stop Loss activada");
           this.isStopLoss = true;
           const data = await this.vende(idNameFuncion);
           if (data) {
@@ -988,13 +1028,15 @@ class Estrategias {
           }
         }
 
+        console.log(">> Evaluando condiciones para venta estándar...");
         if (EMA8_RSI < EMA26_RSI && !this.is_RSI_Alcista(interval)) {
-          console.log(`1/2 condiciones de venta cumplidas`, new Date());
+          console.log("✅ 1/2 condiciones de venta cumplidas", new Date());
+
           if (
             !this.isVelaVerde(ultimaVela) &&
             parseFloat(ultimaVela.close) < EMA20
           ) {
-            console.log(`2/2 condiciones de venta cumplidas`, new Date());
+            console.log("✅ 2/2 condiciones de venta cumplidas", new Date());
             const data = await this.vende(idNameFuncion, totalBtc);
             if (data) {
               return data;
@@ -1131,33 +1173,45 @@ const trader = async () => {
     myData.ultimosIndicadores
   );
 
-  // Busca compra
+  // === Control Principal para Estrategias ===
+
+  // Busca Compra
   if (myData.compras.length < 1) {
+    console.log(">> Evaluando condiciones para compra...");
     const buy = await estrategias.ema8_ema26_rsi(temporalidad, "buy");
 
     if (buy) {
-      console.log("He comprado: ", buy);
+      console.log("✅ Compra realizada:", buy);
       myData.compras.push(buy);
     } else {
-      console.log(`Última revisión en ${symbol} ${temporalidad}`, new Date());
+      console.log(
+        `⏳ Última revisión en ${symbol} (${temporalidad}) a las ${new Date()}. Próximo chequeo en ${
+          tiempoEvaluacion / 1000
+        } segundos`
+      );
     }
   }
 
   // Busca Venta
   if (myData.compras.length >= 1) {
+    console.log(">> Evaluando condiciones para venta...");
+
     for (let i = 0; i < myData.compras.length; i++) {
       if (myData.compras[i].informacion.id === idEstrategia) {
         const sell = await estrategias.ema8_ema26_rsi(temporalidad, "sell");
 
         if (sell) {
           if (sell.informacion.status === "finalizado") {
+            console.log("✅ Venta realizada. Resultado:", sell.resultado);
+
+            // Actualiza el historial y elimina la orden vendida
             const ventaId = sell.compra.binanceOrdenData.orderId;
-            const nuevoArr = myData.compras.filter(
+            myData.compras = myData.compras.filter(
               (item) => item.binanceOrdenData.orderId !== ventaId
             );
-            myData.compras = nuevoArr;
             myData.historial.push(sell);
-            console.log("He vendido y este es el resultado: ", sell.resultado);
+
+            console.log("Historial actualizado con la venta:", sell);
           }
         }
       }
@@ -1165,4 +1219,4 @@ const trader = async () => {
   }
 };
 
-setInterval(trader, 60000);
+setInterval(trader, tiempoEvaluacion);

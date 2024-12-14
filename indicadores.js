@@ -202,8 +202,8 @@ class Indicadores {
       const { resistenciaActual, soporteActual } =
         buscarSoporteResistenciaActual();
 
-      const distanciaTotal = resistenciaActual - soporteActual;
-      const valorCadaZona = distanciaTotal / 4;
+      const distanciaTotal = resistenciaActual - soporteActual; // 2448
+      const valorCadaZona = distanciaTotal / 4; // 612
 
       resistenciaZona1 = valorCadaZona + soporteActual;
       resistenciaZona2 = valorCadaZona * 2 + soporteActual;
@@ -221,6 +221,13 @@ class Indicadores {
 
       const isZona4 =
         precioActual >= resistenciaZona3 && precioActual <= resistenciaZona4;
+      /* console.log("Soportes y Resistencias");
+      console.log("precioActual", precioActual);
+      console.log("soporteActual", soporteActual);
+      console.log("resistenciaZona1", resistenciaZona1);
+      console.log("resistenciaZona2", resistenciaZona2);
+      console.log("resistenciaZona3", resistenciaZona3);
+      console.log("resistenciaZona4", resistenciaZona4);*/
 
       zonas = {
         isZona1,
