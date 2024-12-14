@@ -99,10 +99,6 @@ Cada operación fue abierta con un capital inicial de 20 USDT. Después de 102 o
 El periodo de análisis fue de aproximadamente 23 meses, lo que permite anualizar el rendimiento de la siguiente manera:  
 El capital inicial de 20 USDT creció a 36.94 USDT (20 + 16.94), lo que equivale a un crecimiento anualizado aproximado del **38%**.
 
-### **Corrección de cálculos**
-
-En la versión anterior, se afirmaba que el rendimiento anual era del 134.45%, pero este cálculo fue incorrecto porque no consideraba las pérdidas totales. Al restar las pérdidas (9.95 USDT) de las ganancias (26.89 USDT), se obtiene una ganancia neta de 16.94 USDT, que representa el rendimiento real.
-
 ### **Comparación con inversiones tradicionales**
 
 Comparado con inversiones tradicionales, como cuentas de ahorro bancarias que ofrecen rendimientos menores al 5% anual, este bot proporciona una alternativa altamente rentable dentro del contexto del mercado de criptomonedas, especialmente para estrategias automatizadas de trading.
@@ -122,8 +118,8 @@ Comparado con inversiones tradicionales, como cuentas de ahorro bancarias que of
 1. Descarga [Node.js](https://nodejs.org) e instala Visual Studio Code (o cualquier editor de texto).
 2. Clona el repositorio desde GitHub:
    ```bash
-   git clone <URL-del-repositorio>
-   cd <nombre-del-repositorio>
+   git clone https://github.com/RCYGM/crypto-trading-bots-binance
+   cd crypto-trading-bots-binance
    ```
 3. Instala las dependencias:
    ```bash
@@ -161,71 +157,3 @@ Planeo agregar más estrategias y funcionalidades basadas en las necesidades y s
 ---
 
 Si tienes alguna duda, sugerencia o experiencia que compartir, no dudes en ponerte en contacto conmigo. ¡Espero tus comentarios para seguir mejorando! 🚀
-
-## **Funciones Básicas**
-
-- **#1 `time()` Hora del Servidor**
-- **#2 `accountInfo()` Información de la Cuenta**
-- **#3 `prices()` Precios Actuales**
-
-## **Gestión de Órdenes**
-
-- **#4 `book()` Libro de Órdenes**
-- **#5 `trades()` Historial de Trades**
-- **#6 `order()` Crear una Orden**
-- **#7 `cancelOrder()` Cancelar Orden**
-- **#8 `openOrders()` Órdenes Abiertas**
-- **#9 `allOrders()` Historial Completo de Órdenes**
-
-## **Análisis de Mercado**
-
-- **#10 `depth()` Profundidad del Mercado**
-- **#11 `exchangeInfo()` Información del Intercambio**
-- **#12 `ws.ticker()` Ticker en Tiempo Real**
-- **#13 `avgPrice()` Precio Promedio Ponderado**
-- **#14 `dailyStats()` Estadísticas Diarias**
-- **#15 `candles()` Velas Históricas**
-
-## **Retiros y Depósitos**
-
-- **#16 `withdraw()` Realizar un Retiro**
-- **#17 `depositHistory()` Historial de Depósitos**
-- **#18 `withdrawHistory()` Historial de Retiros**
-
-## **Cuentas de Margen**
-
-- **#19 `marginAccountInfo()` Información de la Cuenta de Margen**
-- **#20 `isolatedMarginAccountInfo()` Información de Margen Aislado**
-- **#21 `userDataStream()` Stream de Datos del Usuario**
-- **#22 `ws.user()` Eventos en Tiempo Real del Usuario**
-- **#23 `marginTransfer()` Transferencias entre Billeteras**
-- **#24 `marginIsolatedTransfer()` Transferencias a Margen Aislado**
-- **#25 `marginOrder()` Crear una Orden en Margen**
-- **#26 `marginAllOrders()` Historial de Órdenes de Margen**
-- **#27 `marginOpenOrders()` Órdenes Abiertas en Margen**
-- **#28 `marginRepay()` Repago de Deudas en Margen**
-- **#29 `marginLoan()` Solicitud de Préstamo en Margen**
-- **#30 `marginAccountTradeList()` Historial de Trades en Margen**
-
-## **Cuentas de Futuros**
-
-- **#31 `futuresPrices()` Precios de Futuros**
-- **#32 `futuresAccountInfo()` Información de la Cuenta de Futuros**
-- **#33 `futuresOrder()` Crear una Orden en Futuros**
-- **#34 `futuresLeverage()` Cambiar Apalancamiento**
-- **#35 `futuresPositionRisk()` Información de Posiciones y Riesgos**
-- **#36 `futuresIncome()` Historial de Ingresos en Futuros**
-- **#37 `futuresOrderBook()` Libro de Órdenes de Futuros**
-- **#38 `futuresTradeList()` Historial de Trades en Futuros**
-- **#39 `futuresCandles()` Velas de Futuros**
-- **#40 `futuresSymbolPriceTicker()` Precio Actual en Futuros**
-- **#41 `futuresSymbolOrderBookTicker()` Mejor Oferta y Demanda en Futuros**
-- **#42 `futuresMarkPrice()` Precio de Marca en Futuros**
-- **#43 `futuresAccountTradeList()` Historial de Trades de Cuenta en Futuros**
-- **#44 `futuresLiquidationOrders()` Órdenes de Liquidación en Futuros**
-- **#45 `futuresFundingRate()` Tasas de Financiación de Futuros**
-- **#46 `futuresTransfer()` Transferencias Internas en Futuros**
-- **#47 `futuresMarginHistory()` Historial de Pagos de Margen en Futuros**
-- **#48 `futuresAdjustMargin()` Ajuste de Márgenes en Futuros**
-- **#49 `futuresPositionRiskAnalysis()` Análisis de Riesgos en Futuros**
-- **#50 `futuresLiquidationStats()` Estadísticas de Liquidaciones en Futuros**
