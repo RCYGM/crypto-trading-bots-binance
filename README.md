@@ -71,7 +71,7 @@ El bot realiza compras y ventas automáticas tras analizar el contexto del merca
 
 ## **Resultados del Backtesting**
 
-El bot fue probado en el par **BTC/USDT** desde **2023-01-01 a 2024-12-31**:
+El bot fue probado en el par **BTC/USDT** desde **2023-01-01 a 2024-12-10**:
 
 - Total de operaciones: 102
 - Promedio de operaciones por mes: 4.25
