@@ -82,7 +82,7 @@ El bot fue probado en el par **BTC/USDT** desde **2023-01-01 a 2024-12-10**:
 - Pérdida total: 9.95 USDT
 - Win rate: 46.08%
 - Profit factor: 2.7
-- Rendimiento promedio por operación: 0.57 USDT (2.35%)
+- Rendimiento promedio por operación: 2.35%
 
 Cada operación fue abierta con un capital de 20 USDT. Esto equivale a un rendimiento anual del 134.45% (ganancia de 26.89 USDT sobre un capital total invertido de 20 USDT x 102 operaciones). Comparado con inversiones tradicionales, como cuentas de ahorro bancarias que ofrecen rendimientos menores al 5% anual, este bot ofrece una alternativa altamente rentable en el contexto de las criptomonedas.
 
