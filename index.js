@@ -1,3 +1,55 @@
+// ================================================================================
+
+// ================================================================================
+
+// ================================================================================
+
+const usdtOperacion = 20; // Es la cantidad en USDT que compraras al operar en BTC.
+const temporalidad = "1h"; // Es el grafico en el que vas a operar, puede ser "15m"  "5m "  "1m"  siempre dentro de las "".
+const evaluarCada = 60; // Es el tiempo en segundos que el bot tardara para volver a analizar la estrategia, tiene que ser en segundos.
+
+// ================================================================================
+
+// ===== ⚠️ NO CAMBIES NADA A PARTIR DE AQUÍ SI NO SABES DE JAVASCRIPT ⚠️ =====
+
+// ================================================================================
+
+// ===== ⚠️ NO CAMBIES NADA A PARTIR DE AQUÍ SI NO SABES DE JAVASCRIPT ⚠️ =====
+
+// ================================================================================
+
+// ===== ⚠️ NO CAMBIES NADA A PARTIR DE AQUÍ SI NO SABES DE JAVASCRIPT ⚠️ =====
+
+// ================================================================================
+
+// ===== ⚠️ NO CAMBIES NADA A PARTIR DE AQUÍ SI NO SABES DE JAVASCRIPT ⚠️ =====
+
+// ================================================================================
+
+// ===== ⚠️ NO CAMBIES NADA A PARTIR DE AQUÍ SI NO SABES DE JAVASCRIPT ⚠️ =====
+
+// ================================================================================
+
+// ===== ⚠️ NO CAMBIES NADA A PARTIR DE AQUÍ SI NO SABES DE JAVASCRIPT ⚠️ =====
+
+// ================================================================================
+
+// ===== ⚠️ NO CAMBIES NADA A PARTIR DE AQUÍ SI NO SABES DE JAVASCRIPT ⚠️ =====
+
+// ================================================================================
+
+// ===== ⚠️ NO CAMBIES NADA A PARTIR DE AQUÍ SI NO SABES DE JAVASCRIPT ⚠️ =====
+
+// ================================================================================
+
+// ===== ⚠️ NO CAMBIES NADA A PARTIR DE AQUÍ SI NO SABES DE JAVASCRIPT ⚠️ =====
+
+// ================================================================================
+
+// ===== ⚠️ NO CAMBIES NADA A PARTIR DE AQUÍ SI NO SABES DE JAVASCRIPT ⚠️ =====
+
+// ================================================================================
+
 const Binance = require("binance-api-node").default;
 
 require("dotenv").config();
@@ -19,8 +71,8 @@ client
   });
 
 const symbol = "BTCUSDT";
-const temporalidad = "1h";
-const tiempoEvaluacion = 60000;
+
+const tiempoEvaluacion = evaluarCada * 1000 < 5000 ? 5000 : evaluarCada * 1000;
 const idEstrategia = `ema8_ema26_rsi${temporalidad}`;
 const myData = {
   candLesticksData: [],
@@ -707,7 +759,7 @@ class Estrategias {
         const calcularDatosCompra = async () => {
           const ultimaVela = this.ultimaVela("15m");
 
-          const inversionUsdt = 20; //await balances.balance("USDT");
+          const inversionUsdt = usdtOperacion; //await balances.balance("USDT");
           const perdidaMaxima = inversionUsdt * 0.02;
           const stopLoss = parseFloat(
             (this.price - this.price * 0.01).toFixed(2)

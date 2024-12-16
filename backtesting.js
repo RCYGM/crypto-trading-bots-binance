@@ -1504,7 +1504,7 @@ const backtesting = async (fechaStartBacktesting, fechaEndBacktesting) => {
     fechaFinal: new Date(fechaEndBacktesting),
     resumenOperaciones: {
       totalAbiertas: historial.length,
-      promedioMes: historial.length / 12,
+      //promedioMes: historial.length / 12,
       totalGanadoras,
       totalPerdedoras,
       totalStopLoss,
