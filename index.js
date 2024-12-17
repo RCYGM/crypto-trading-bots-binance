@@ -6,7 +6,8 @@
 
 const usdtOperacion = 20; // Es la cantidad en USDT que compraras al operar en BTC.
 const temporalidad = "1h"; // Es el grafico en el que vas a operar, puede ser "15m"  "5m "  "1m"  siempre dentro de las "".
-const evaluarCada = 60; // Es el tiempo en segundos que el bot tardara para volver a analizar la estrategia, tiene que ser en segundos.
+const evaluarCada = 1; // Es el tiempo en segundos que el bot tardara para volver a analizar la estrategia, tiene que ser en segundos.
+const verGraficos = true; // Escribe true para ver los gráficos y false para dejar de verlos.
 
 // ================================================================================
 
@@ -72,7 +73,8 @@ client
 
 const symbol = "BTCUSDT";
 
-const tiempoEvaluacion = evaluarCada * 1000 < 5000 ? 5000 : evaluarCada * 1000;
+const tiempoEvaluacion =
+  evaluarCada * 1000 < 30000 ? 30000 : evaluarCada * 1000;
 const idEstrategia = `ema8_ema26_rsi${temporalidad}`;
 const myData = {
   candLesticksData: [],
@@ -88,7 +90,6 @@ const myData = {
   ventas: [],
   historial: [],
 };
-
 const convertToBerlinTime = (utcTime) => {
   const date = new Date(utcTime); // UTC timestamp de Binance
   const formatter = new Intl.DateTimeFormat("en-US", {
@@ -766,7 +767,7 @@ class Estrategias {
           ); /*parseFloat(this.ultimaVela("1h").low);*/
           //console.log("Vela", this.ultimaVela("1h"), "stopLoss", stopLoss);
 
-          const compra = inversionUsdt / this.price;
+          const compra = parseFloat((inversionUsdt / this.price).toFixed(5));
           return {
             perdidaMaxima,
             stopLoss,
@@ -997,6 +998,51 @@ class Estrategias {
         resistenciaZona4,
       } = this.SR_4h;
 
+      if (verGraficos) {
+        console.clear();
+        console.log("\n" + "=".repeat(70)); // Línea superior
+
+        console.log("📊 CONTEXTO DEL MERCADO (4H)".padStart(45));
+        console.log("-".repeat(70));
+        console.log(`  📈 Resistencia #2: `.padEnd(30), r2_4h);
+        console.log(`  📈 Resistencia #1: `.padEnd(30), r1_4h);
+        console.log(`  🔹 Punto Pivote (PP): `.padEnd(30), pp_4h);
+        console.log(`  📉 Soporte #1: `.padEnd(30), s1_4h);
+        console.log(`  📉 Soporte #2: `.padEnd(30), s2_4h);
+
+        console.log("\n" + "=".repeat(70));
+        console.log("📍 SOPORTE Y RESISTENCIA ACTUALES".padStart(45));
+        console.log("-".repeat(70));
+        console.log(`  🔺 Resistencia actual: `.padEnd(30), resistenciaActual);
+        console.log(`  🔻 Soporte actual: `.padEnd(30), soporteActual);
+
+        console.log("\n" + "=".repeat(70));
+        console.log("📌 EN ESTA ZONA ESTÁ EL PRECIO".padStart(45));
+        console.log("-".repeat(70));
+        console.log(`  🟢 ¿Está en la zona 1? `.padEnd(30), isZona1);
+        console.log(`  🟡 ¿Está en la zona 2? `.padEnd(30), isZona2);
+        console.log(`  🟠 ¿Está en la zona 3? `.padEnd(30), isZona3);
+        console.log(`  🔴 ¿Está en la zona 4? `.padEnd(30), isZona4);
+
+        console.log("\n" + "=".repeat(70));
+        console.log("🏁 RESISTENCIA DE CADA ZONA".padStart(45));
+        console.log("-".repeat(70));
+        console.log(`  🟦 Resistencia zona 1: `.padEnd(30), resistenciaZona1);
+        console.log(`  🟦 Resistencia zona 2: `.padEnd(30), resistenciaZona2);
+        console.log(`  🟦 Resistencia zona 3: `.padEnd(30), resistenciaZona3);
+        console.log(`  🟦 Resistencia zona 4: `.padEnd(30), resistenciaZona4);
+
+        console.log("\n" + "=".repeat(70));
+        console.log("📈 INDICADORES DE LA ESTRATEGIA".padStart(45));
+        console.log("-".repeat(70));
+        console.log(`  📊 Precio BTCUSDT: `.padEnd(30), this.price);
+        console.log(`  📊 EMA 20: `.padEnd(30), EMA20);
+        console.log(`  📊 EMA 8 RSI: `.padEnd(30), EMA8_RSI);
+        console.log(`  📊 EMA 26 RSI: `.padEnd(30), EMA26_RSI);
+
+        console.log("=".repeat(70) + "\n");
+      }
+
       if (buySell === "buy") {
         console.log("=== Primeras Condiciones ===");
         console.log("this.isZona3_4h (false):", this.isZona3_4h);
@@ -1056,6 +1102,7 @@ class Estrategias {
                 );
                 const data = await this.compra(idNameFuncion);
                 if (data) {
+                  console.log(data);
                   return data;
                 }
               }
@@ -1102,13 +1149,56 @@ class Estrategias {
   };
 }
 
-const getVelasData = async (symbol, interval) => {
+const getVelasData = async (symbol, interval, limit) => {
   const velas = await client.candles({
     symbol: symbol,
     interval: interval,
+    limit: limit,
   });
   return velas;
 };
+
+function logInstrucciones() {
+  console.clear();
+  console.log("\n".repeat(2)); // Espacios antes del mensaje
+
+  console.log("=".repeat(70)); // Línea superior
+  console.log(
+    " ".repeat(10) + "🛠️  INSTRUCCIONES BÁSICAS PARA USAR EL BOT  🛠️"
+  );
+  console.log("=".repeat(70)); // Línea inferior
+
+  console.log("\n📋 **¿Cómo detener el bot?**");
+  console.log(
+    "  - Si el bot está en ejecución y quieres detenerlo:\n" +
+      "    👉 Presiona 'Ctrl + C' en la terminal.\n" +
+      "    Esto detendrá la ejecución actual del bot.\n"
+  );
+
+  console.log("🔄 **¿Cómo reiniciar el bot?**");
+  console.log(
+    "  - Si necesitas reiniciar el bot después de detenerlo:\n" +
+      "    👉 Escribe uno de estos comandos en la terminal y presiona 'Enter':\n" +
+      "       - node index.js\n" +
+      "       - npm start\n"
+  );
+
+  console.log("❌ **¿Cómo cerrar la terminal?**");
+  console.log(
+    "  - Si quieres cerrar la terminal completamente:\n" +
+      "    👉 Haz clic en la 'X' en la esquina superior derecha de la terminal.\n" +
+      "    👉 O escribe 'exit' y presiona 'Enter'.\n"
+  );
+
+  console.log("\n💡 **Recomendaciones:**");
+  console.log(
+    "  - Siempre monitorea el bot mientras esté activo.\n" +
+      "  - Si el bot tiene una operación abierta, deberás vender manualmente si lo detienes.\n" +
+      "  - Reinicia el bot solo cuando estés seguro de que todo está bajo control."
+  );
+
+  console.log("\n".repeat(2)); // Espacios después del mensaje
+}
 
 const trader = async () => {
   const prices = await client.prices().then((prices) => {
@@ -1120,12 +1210,12 @@ const trader = async () => {
     return listaPrecios;
   });
 
-  const data1mArr = await getVelasData(symbol, "1m");
-  const data5mArr = await getVelasData(symbol, "5m");
-  const data15mArr = await getVelasData(symbol, "15m");
-  const data30mArr = await getVelasData(symbol, "30m");
-  const data1hmArr = await getVelasData(symbol, "1h");
-  const data4hArr = await getVelasData(symbol, "4h");
+  const data1mArr = await getVelasData(symbol, "1m", 60);
+  const data5mArr = await getVelasData(symbol, "5m", 60);
+  const data15mArr = await getVelasData(symbol, "15m", 60);
+  const data30mArr = await getVelasData(symbol, "30m", 60);
+  const data1hmArr = await getVelasData(symbol, "1h", 60);
+  const data4hArr = await getVelasData(symbol, "4h", 60);
 
   const obtenerIndicadores = (velas, interval, price) => {
     const priceCloseArr = velas.map((vela) => parseFloat(vela.close));
@@ -1225,6 +1315,39 @@ const trader = async () => {
     myData.ultimosIndicadores
   );
 
+  function logOperacionAbierta() {
+    console.clear(); // Limpia la terminal
+    console.log("\n".repeat(2)); // Espacios antes del mensaje
+
+    console.log("=".repeat(70)); // Línea superior
+    console.log(" ".repeat(20) + "⚠️ OPERACIÓN ABIERTA ⚠️"); // Título centrado
+    console.log("=".repeat(70)); // Línea inferior
+
+    console.log("\n¡ATENCIÓN!");
+    console.log(
+      "El bot tiene una operación abierta.\n" +
+        "Si cierras el bot, tendrás que vender manualmente."
+    );
+
+    console.log("\nAcciones a considerar:");
+    console.log(
+      "  - Monitorear el mercado.\n" +
+        "  - Mantener el bot activo para condiciones automáticas.\n" +
+        "  - Vender manualmente si decides detener el bot.\n" +
+        "  - Si vendiste manualmente, debes reiniciar el bot para que funcione nuevamente.\n"
+    );
+
+    console.log("¿Cómo reiniciar el bot?");
+    console.log(
+      "  - Presiona 'Ctrl + C' para detener el bot.\n" +
+        "  - Luego, inicia el bot nuevamente con uno de los siguientes comandos:\n" +
+        "    👉 node index.js\n" +
+        "    👉 npm start"
+    );
+
+    console.log("\n".repeat(2)); // Espacios después del mensaje
+  }
+
   // === Control Principal para Estrategias ===
 
   // Busca Compra
@@ -1245,9 +1368,10 @@ const trader = async () => {
   }
 
   // Busca Venta
-  if (myData.compras.length >= 1) {
-    console.log(">> Evaluando condiciones para venta...");
 
+  if (myData.compras.length >= 1) {
+    logOperacionAbierta();
+    console.log(">> Evaluando condiciones para venta...");
     for (let i = 0; i < myData.compras.length; i++) {
       if (myData.compras[i].informacion.id === idEstrategia) {
         const sell = await estrategias.ema8_ema26_rsi(temporalidad, "sell");
@@ -1269,6 +1393,7 @@ const trader = async () => {
       }
     }
   }
+  setTimeout(logInstrucciones, 20000);
 };
 
 setInterval(trader, tiempoEvaluacion);

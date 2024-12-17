@@ -52,28 +52,9 @@ const Indicadores = require("./indicadores");
 const indicadores = new Indicadores();
 
 class Estrategias {
-  constructor(
-    data1m,
-    data5m,
-    data15m,
-    data30m,
-    data1h,
-    data4h,
-    price,
-    comprasArr,
-    ultimosIndicadores
-  ) {
-    if (data1m.candLesticksInterval !== "1m") {
-      throw new Error("Error en Estrategias data1m no es 1m");
-    }
-    if (data5m.candLesticksInterval !== "5m") {
-      throw new Error("Error en Estrategias data5m no es 5m");
-    }
+  constructor(data15m, data1h, data4h, price, comprasArr, ultimosIndicadores) {
     if (data15m.candLesticksInterval !== "15m") {
       throw new Error("Error en Estrategias data15m no es 15m");
-    }
-    if (data30m.candLesticksInterval !== "30m") {
-      throw new Error("Error en Estrategias data30m no es 30m");
     }
     if (data1h.candLesticksInterval !== "1h") {
       throw new Error("Error en Estrategias data1h no es 1h");
@@ -83,31 +64,31 @@ class Estrategias {
     }
 
     //Data General
-    this.data1m = data1m;
-    this.data5m = data5m;
+    // this.data1m = data1m;
+    // this.data5m = data5m;
     this.data15m = data15m;
-    this.data30m = data30m;
+    // this.data30m = data30m;
     this.data1h = data1h;
     this.data4h = data4h;
     this.price = price;
     this.comprasArr = comprasArr;
 
     //Velas en el presente
-    this.velas1m = this.data1m.candLesticks;
-    this.velas5m = this.data5m.candLesticks;
+    // this.velas1m = this.data1m.candLesticks;
+    // this.velas5m = this.data5m.candLesticks;
     this.velas15m = this.data15m.candLesticks;
-    this.velas30m = this.data30m.candLesticks;
+    // this.velas30m = this.data30m.candLesticks;
     this.velas1h = this.data1h.candLesticks;
     this.velas4h = this.data4h.candLesticks;
 
     // Indicadores
-    this.indicadores1m = this.data1m.indicadores;
-    this.indicadores5m = this.data5m.indicadores;
+    // this.indicadores1m = this.data1m.indicadores;
+    // this.indicadores5m = this.data5m.indicadores;
     this.indicadores15m = this.data15m.indicadores;
-    this.indicadores30m = this.data30m.indicadores;
+    // this.indicadores30m = this.data30m.indicadores;
     this.indicadores1h = this.data1h.indicadores;
     this.indicadores4h = this.data4h.indicadores;
-
+    /*
     const {
       EMA10_1m,
       EMA20_1m,
@@ -214,7 +195,7 @@ class Estrategias {
     this.SR_5m = SR_5m; // Obj
     this.EMA8_RSI_5m = EMA8_RSI_5m; // Number
     this.EMA26_RSI_5m = EMA26_RSI_5m; // Number
-    this.ultimasVelasData_5m = ultimasVelasData_5m; // Arr => Obj
+    this.ultimasVelasData_5m = ultimasVelasData_5m; // Arr => Obj*/
 
     const {
       EMA10_15m,
@@ -270,7 +251,7 @@ class Estrategias {
     this.EMA26_RSI_15m = EMA26_RSI_15m; // Number
     this.ultimasVelasData_15m = ultimasVelasData_15m; // Arr => Obj
 
-    const {
+    /* const {
       EMA10_30m,
       EMA20_30m,
       EMA50_30m,
@@ -322,7 +303,7 @@ class Estrategias {
     this.SR_30m = SR_30m; // Obj
     this.EMA8_RSI_30m = EMA8_RSI_30m; // Number
     this.EMA26_RSI_30m = EMA26_RSI_30m; // Number
-    this.ultimasVelasData_30m = ultimasVelasData_30m; // Arr => Obj
+    this.ultimasVelasData_30m = ultimasVelasData_30m; // Arr => Obj*/
 
     const {
       EMA10_1h,
@@ -529,20 +510,36 @@ class Estrategias {
           case "ema8_ema26_rsi1h": {
             const rsi10maEma8 =
               this.ultimosIndicadores.velas1h.slice(-10)[0].EMA8_RSI_1h;
+
             const rsi5taEma8 =
               this.ultimosIndicadores.velas1h.slice(-5)[0].EMA8_RSI_1h;
+
             const rsiPenultimaEma8 =
               this.ultimosIndicadores.velas1h.slice(-5)[0].EMA8_RSI_1h;
+
             const rsiUltEma8 =
               this.ultimosIndicadores.velas1h.slice(-1)[0].EMA8_RSI_1h;
+
             const rsiUltEma26 =
               this.ultimosIndicadores.velas1h.slice(-1)[0].EMA26_RSI_1h;
+
             const cruceTardido =
               rsiUltEma8 > rsiUltEma26 && rsi10maEma8 < rsiUltEma26;
+
             const crucePrudente =
               rsiUltEma8 > rsiUltEma26 && rsi5taEma8 < rsiUltEma26;
+
             const cruceReciente =
               rsiUltEma8 > rsiUltEma26 && rsiPenultimaEma8 < rsiUltEma26;
+
+            /* console.log("rsi10maEma8", rsi10maEma8);
+            console.log("rsi5taEma8", rsi5taEma8);
+            console.log("rsiPenultimaEma8", rsiPenultimaEma8);
+            console.log("rsiUltEma8", rsiUltEma8);
+            console.log(
+              "Esto es lo que hay: en this.ultimosIndicadores.velas1h.slice(-10)",
+              this.ultimosIndicadores.velas1h.slice(-10)[0]
+            );*/
 
             return cruceReciente || crucePrudente || cruceTardido;
           }
@@ -711,7 +708,9 @@ class Estrategias {
           ); /*parseFloat(this.ultimaVela("1h").low);*/
           //console.log("Vela", this.ultimaVela("1h"), "stopLoss", stopLoss);
 
-          const compra = inversionUsdt / this.price;
+          const compra = parseFloat((inversionUsdt / this.price).toFixed(5));
+          console.log("compra", compra);
+
           return {
             perdidaMaxima,
             stopLoss,
@@ -723,12 +722,31 @@ class Estrategias {
         const { perdidaMaxima, stopLoss, btc, usdt, compra } =
           await calcularDatosCompra();
 
-        const orden = await client.order({
+        const orden = {
           symbol: "BTCUSDT",
-          side: "BUY",
-          type: "MARKET",
-          quantity: compra,
-        });
+          orderId: 12345678,
+          orderListId: -1, // Siempre -1 si no es parte de una lista de órdenes OCO
+          clientOrderId: "unique-order-id",
+          transactTime: 1627994462283, // Tiempo de la transacción en milisegundos
+          price: "0.00000000", // El precio será 0 en una orden MARKET
+          origQty: "0.00100000", // Cantidad original que solicitaste comprar
+          executedQty: "0.00100000", // Cantidad que se ejecutó
+          cummulativeQuoteQty: "45.00", // Total en USDT gastado (precio * cantidad)
+          status: "FILLED", // Estado de la orden (FILLED, PARTIALLY_FILLED, etc.)
+          timeInForce: "GTC", // Para MARKET será GTC (Good Till Cancel)
+          type: "MARKET", // Tipo de orden
+          side: "BUY", // Lado de la operación (BUY o SELL)
+          fills: [
+            // Lista de ejecuciones individuales de la orden
+            {
+              price: "45000.00", // Precio al que se ejecutó esta parte de la orden
+              qty: "0.00100000", // Cantidad ejecutada
+              commission: "0.00000000", // Comisión cobrada
+              commissionAsset: "USDT", // Activo en el que se cobró la comisión
+              tradeId: 987654321,
+            },
+          ],
+        };
 
         if (orden) {
           const data = {
@@ -812,12 +830,31 @@ class Estrategias {
       const { informacion, candLesticksCompra, metricas, binanceOrdenData } =
         this.encontrarOrden(idNameFuncion);
 
-      const orden = await client.order({
+      const orden = {
         symbol: "BTCUSDT",
-        side: "SELL",
-        type: "MARKET",
-        quantity: totalBtcVenta,
-      });
+        orderId: 12345678,
+        orderListId: -1, // Siempre -1 si no es parte de una lista de órdenes OCO
+        clientOrderId: "unique-order-id",
+        transactTime: 1627994462283, // Tiempo de la transacción en milisegundos
+        price: "0.00000000", // El precio será 0 en una orden MARKET
+        origQty: "0.00100000", // Cantidad original que solicitaste comprar
+        executedQty: "0.00100000", // Cantidad que se ejecutó
+        cummulativeQuoteQty: "45.00", // Total en USDT gastado (precio * cantidad)
+        status: "FILLED", // Estado de la orden (FILLED, PARTIALLY_FILLED, etc.)
+        timeInForce: "GTC", // Para MARKET será GTC (Good Till Cancel)
+        type: "MARKET", // Tipo de orden
+        side: "BUY", // Lado de la operación (BUY o SELL)
+        fills: [
+          // Lista de ejecuciones individuales de la orden
+          {
+            price: "45000.00", // Precio al que se ejecutó esta parte de la orden
+            qty: "0.00100000", // Cantidad ejecutada
+            commission: "0.00000000", // Comisión cobrada
+            commissionAsset: "USDT", // Activo en el que se cobró la comisión
+            tradeId: 987654321,
+          },
+        ],
+      };
 
       const {
         fechaVelaBerlin,
@@ -944,21 +981,21 @@ class Estrategias {
 
       if (buySell === "buy") {
         if (!this.isZona3_4h && !this.isZona4_4h && resistenciaActual) {
-          console.log(`1/4 condiciones de compras cumplidas`, new Date());
+          //console.log(`1/4 condiciones de compras cumplidas`, new Date());
 
           if (this.hasCruceAlcista(idNameFuncion)) {
-            console.log(`2/4 condiciones de compras cumplidas`, new Date());
+            // console.log(`2/4 condiciones de compras cumplidas`, new Date());
             if (
               this.is_RSI_Alcista(interval) &&
               EMA8_RSI >= 50 &&
               EMA8_RSI <= 65
             ) {
-              console.log(`3/4 condiciones de compras cumplidas`, new Date());
+              // console.log(`3/4 condiciones de compras cumplidas`, new Date());
               if (
                 this.isVelaVerde(ultimaVela) &&
                 parseFloat(ultimaVela.close) > EMA20
               ) {
-                console.log(`4/4 condiciones de compras cumplidas`, new Date());
+                // console.log(`4/4 condiciones de compras cumplidas`, new Date());
                 const data = await this.compra(idNameFuncion);
                 if (data) {
                   return data;
@@ -971,10 +1008,8 @@ class Estrategias {
         const myOperacion = this.encontrarOrden(idNameFuncion);
         const { stopLoss, totalBtc } = myOperacion.metricas;
 
-        console.log(`RSI ${EMA8_RSI}`);
-
         if (this.price < stopLoss) {
-          console.log("Venta en Stop Loss");
+          // console.log("Venta en Stop Loss");
           this.isStopLoss = true;
           const data = await this.vende(idNameFuncion);
           if (data) {
@@ -983,12 +1018,12 @@ class Estrategias {
         }
 
         if (EMA8_RSI < EMA26_RSI && !this.is_RSI_Alcista(interval)) {
-          console.log(`1/2 condiciones de venta cumplidas`, new Date());
+          // console.log(`1/2 condiciones de venta cumplidas`, new Date());
           if (
             !this.isVelaVerde(ultimaVela) &&
             parseFloat(ultimaVela.close) < EMA20
           ) {
-            console.log(`2/2 condiciones de venta cumplidas`, new Date());
+            //  console.log(`2/2 condiciones de venta cumplidas`, new Date());
             const data = await this.vende(idNameFuncion, totalBtc);
             if (data) {
               return data;
@@ -1216,29 +1251,27 @@ const backtesting = async (fechaStartBacktesting, fechaEndBacktesting) => {
         const getHasVolumen = indicadores.calculateHasVolumen(velas.slice(-5));
 
         const sopResObj = indicadores.calculateSopRes(priceCloseArr, price);
-        const data = [
-          {
-            candLesticksInterval: interval,
-            candLesticks: velas,
-            indicadores: {
-              [`EMA10_${interval}`]: ema10,
-              [`EMA20_${interval}`]: ema20,
-              [`EMA50_${interval}`]: ema50,
-              [`RSI14_${interval}`]: rsi14,
-              [`EMA_RSI8_${interval}`]: ema_rsi8,
-              [`EMA_RSI26_${interval}`]: ema_rsi26,
-              [`ultimasVelasData_${interval}`]: {
-                ultimasVelas: velas.slice(-5),
-                hasVolumen:
-                  getHasVolumen.hasVolumen3velas ||
-                  getHasVolumen.hasVolumen5velas,
-                hasVolumen3Velas: getHasVolumen.hasVolumen3velas,
-                hasVolumen5Velas: getHasVolumen.hasVolumen5velas,
-              },
-              [`SR_${interval}`]: sopResObj,
+        const data = {
+          candLesticksInterval: interval,
+          candLesticks: velas,
+          indicadores: {
+            [`EMA10_${interval}`]: ema10,
+            [`EMA20_${interval}`]: ema20,
+            [`EMA50_${interval}`]: ema50,
+            [`RSI14_${interval}`]: rsi14,
+            [`EMA8_RSI_${interval}`]: ema_rsi8,
+            [`EMA26_RSI_${interval}`]: ema_rsi26,
+            [`ultimasVelasData_${interval}`]: {
+              ultimasVelas: velas.slice(-5),
+              hasVolumen:
+                getHasVolumen.hasVolumen3velas ||
+                getHasVolumen.hasVolumen5velas,
+              hasVolumen3Velas: getHasVolumen.hasVolumen3velas,
+              hasVolumen5Velas: getHasVolumen.hasVolumen5velas,
             },
+            [`SR_${interval}`]: sopResObj,
           },
-        ];
+        };
 
         return data;
       };
@@ -1263,9 +1296,9 @@ const backtesting = async (fechaStartBacktesting, fechaEndBacktesting) => {
         priceCloseArr_4h
       );
 
-      myData.ultimosIndicadores.velas15m.push(myData15[0].indicadores);
-      myData.ultimosIndicadores.velas1h.push(myData1h[0].indicadores);
-      myData.ultimosIndicadores.velas4h.push(myData4h[0].indicadores);
+      myData.ultimosIndicadores.velas15m.push(myData15.indicadores);
+      myData.ultimosIndicadores.velas1h.push(myData1h.indicadores);
+      myData.ultimosIndicadores.velas4h.push(myData4h.indicadores);
 
       if (myData.ultimosIndicadores.velas15m.length > 10) {
         myData.ultimosIndicadores.velas15m =
@@ -1299,7 +1332,7 @@ const backtesting = async (fechaStartBacktesting, fechaEndBacktesting) => {
 
         //  console.log("Voy a buscar una compra");
         //  console.log("Estrategias instance:", estrategias);
-        const buy = await estrategias.ema8_ema26_rsi1h("1h", "buy");
+        const buy = await estrategias.ema8_ema26_rsi("1h", "buy");
 
         if (buy) {
           //  console.log("HE COMPRADO");
@@ -1321,7 +1354,7 @@ const backtesting = async (fechaStartBacktesting, fechaEndBacktesting) => {
           if (myData.compras[i].informacion.id === "ema8_ema26_rsi1h") {
             //    console.log("ENCONTRE UN ID LLAMADO EMA-RSI-15M");
 
-            const sell = await estrategias.ema8_ema26_rsi1h("1h", "sell");
+            const sell = await estrategias.ema8_ema26_rsi("1h", "sell");
 
             if (sell) {
               // console.log("sell FUE EXITOSA: ", sell);
@@ -1530,8 +1563,8 @@ const backtesting = async (fechaStartBacktesting, fechaEndBacktesting) => {
 
 (async () => {
   const resultado = await backtesting(
-    new Date("2023-01-01T00:00:00.000Z").getTime(),
-    new Date("2024-12-31T00:00:00.000Z").getTime()
+    new Date("2024-11-01T00:00:00.000Z").getTime(),
+    new Date("2024-12-17T00:00:00.000Z").getTime()
   );
   console.log(resultado);
 })();
